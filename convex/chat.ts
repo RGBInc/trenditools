@@ -54,6 +54,26 @@ export const saveChatMessage = mutation({
   },
 });
 
+// Helper function to transform storage IDs to image URLs
+function transformScreenshotUrl(screenshot: string | undefined): string | undefined {
+  if (!screenshot) return undefined;
+  
+  // If it's already a full URL (like seed data), return as-is
+  if (screenshot.startsWith('http')) {
+    return screenshot;
+  }
+  
+  // If it's a relative URL path starting with /image?id=, convert to full URL
+  if (screenshot.startsWith('/image?id=')) {
+    const baseUrl = process.env.CONVEX_SITE_URL || 'https://watchful-gazelle-766.convex.cloud';
+    return `${baseUrl}${screenshot}`;
+  }
+  
+  // If it's a storage ID, convert to image URL using Convex site URL
+  const baseUrl = process.env.CONVEX_SITE_URL || 'https://watchful-gazelle-766.convex.cloud';
+  return `${baseUrl}/image?id=${screenshot}`;
+}
+
 export const getChatHistory = query({
   args: { sessionId: v.string() },
   handler: async (ctx, args) => {
@@ -70,9 +90,13 @@ export const getChatHistory = query({
           const tools = await Promise.all(
             message.toolRecommendations.map(toolId => ctx.db.get(toolId))
           );
+          const validTools = tools.filter((tool): tool is Doc<"tools"> => tool !== null);
           return {
             ...message,
-            recommendedTools: tools.filter(Boolean) as Doc<"tools">[],
+            recommendedTools: validTools.map((tool) => ({
+              ...tool,
+              screenshot: transformScreenshotUrl(tool.screenshot)
+            })),
           };
         }
         return { ...message, recommendedTools: [] as Doc<"tools">[] };
@@ -86,7 +110,7 @@ export const getChatHistory = query({
 async function generateAIResponse(userMessage: string, relevantTools: Doc<"tools">[]): Promise<string> {
   const openai = new (await import("openai")).default({
     baseURL: process.env.CONVEX_OPENAI_BASE_URL,
-    apiKey: process.env.CONVEX_OPENAI_API_KEY,
+    apiKey: process.env.OPENAI_API_KEY,
   });
 
   const toolsContext = relevantTools.length > 0 
