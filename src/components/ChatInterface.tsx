@@ -94,13 +94,13 @@ export function ChatInterface({ onViewToolPage }: ChatInterfaceProps) {
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center py-12 space-y-6"
+            className="text-center py-12 space-y-3"
           >
             <div className="w-16 h-16 mx-auto flex items-center justify-center">
               <Wrench className="w-8 h-8 text-muted-foreground" />
             </div>
             <div>
-              <h3 className="text-xl md:text-2xl font-semibold mb-2">TrendiTools Assistant</h3>
+              <h3 className="text-xl md:text-2xl font-semibold mb-2">Assistant</h3>
               <p className="text-muted-foreground mb-6 text-sm md:text-base">Ask about tools for design, productivity, development, and more.</p>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl mx-auto">
@@ -206,9 +206,9 @@ export function ChatInterface({ onViewToolPage }: ChatInterfaceProps) {
       </div>
 
       {/* Enhanced Input Section with better UI */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 px-4 md:px-6 py-4 bg-background/80 backdrop-blur-md border-t border-border/50">
+      <div className="fixed bottom-0 left-0 right-0 z-40 px-4 md:px-6 py-4 bg-background/80 backdrop-blur-md">
         <div className="max-w-4xl mx-auto">
-          <div className="border-2 border-primary/20 rounded-2xl bg-gradient-to-r from-background to-background/80 shadow-lg backdrop-blur-sm transition-all duration-200 hover:border-primary/30 focus-within:border-primary/50">
+          <div className="border-2 border-primary/20 rounded-2xl bg-gradient-to-r from-background to-background/80 shadow-lg backdrop-blur-sm transition-all duration-300 ease-out hover:border-primary/30 focus-within:border-primary/50 focus-within:shadow-xl">
             <PromptInput
               value={message}
               onValueChange={handleValueChange}

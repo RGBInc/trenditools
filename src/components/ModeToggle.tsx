@@ -25,7 +25,7 @@ export function ModeToggle({ mode, onModeChange }: ModeToggleProps) {
         className="flex items-center space-x-2"
       >
         <Bot className="w-4 h-4" />
-        <span className="hidden sm:inline">TrendiTools Assistant</span>
+        <span className="hidden sm:inline">AI Assistant</span>
       </Button>
     </div>
   );

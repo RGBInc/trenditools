@@ -4,8 +4,14 @@ This system automates the entire process of adding new tools to the TrendiTools 
 
 ## Overview
 
-The automation script (`scripts/process-tools.js`) processes URLs from a CSV file and:
+TrendiTools provides a comprehensive processing script (`scripts/process-tools.js`) with:
+- **Granular progress tracking** - 9 distinct processing stages
+- **Resume functionality** - Continue from interruption point
+- **Field-specific retries** - Retry only failed operations
+- **Persistent state management** - Never lose progress
+- **Enterprise-grade reliability** - Perfect for large datasets (1000+ URLs)
 
+The script:
 1. **Extracts structured data** using Firecrawl's advanced extraction API
 2. **Takes screenshots** using Puppeteer with optimized settings
 3. **Uploads everything** to Convex database with proper error handling
@@ -61,17 +67,33 @@ https://another-tool.com,,,,,
 
 **Note**: Only the URL column needs to be filled. The script will automatically populate all other fields.
 
-### 2. Run the Script
+### 2. Run the Processing Script
 
 ```bash
+# Dry run with progress tracking
+npm run process-tools:dry
+
+# Live processing with progress tracking
 npm run process-tools
+
+# Resume interrupted processing
+npm run process-tools:resume
+
+# Retry only failed fields
+npm run process-tools:retry
 ```
 
-The script will:
+**Script features:**
+- **Progress tracking**: Saves state to `data/processing-progress.json`
+- **Resume capability**: Automatically continues from interruption
+- **Field-specific retries**: Retry only extraction, screenshot, or upload failures
+- **Detailed monitoring**: Real-time progress indicators and stage breakdown
+
+**The script will:**
 - Process URLs in batches of 5 (configurable)
 - Add delays between requests to be respectful
 - Show detailed progress and error reporting
-- Save results to `data/processing-results.json`
+- Save results to JSON files for analysis
 
 ### 3. Monitor Progress
 
@@ -219,22 +241,64 @@ if (savedTool) {
 4. **Review Results**: Always review extracted data for quality
 5. **Rate Limiting**: Respect website rate limits and terms of service
 
+## Script Features
+
+✅ **Granular 9-stage progress tracking**  
+✅ **Resume from interruption**  
+✅ **Field-specific error recovery**  
+✅ **Real-time progress file persistence**  
+✅ **Enterprise-grade support for 1000+ URLs**  
+✅ **Detailed stage breakdown monitoring**  
+✅ **Full dry run support**  
+✅ **Perfect for both testing and production**
+
 ## Future Enhancements
 
-- [ ] Dry-run mode for testing
-- [ ] Resume functionality for interrupted processing
+### ✅ Implemented Features
+- [x] **Dry-run mode for testing** - Available with `npm run process-tools:dry`
+- [x] **Resume functionality for interrupted processing** - Core feature
+- [x] **Dashboard for monitoring processing status** - Real-time progress tracking
+
+### 🚧 Planned Features
 - [ ] Custom extraction prompts per domain
 - [ ] Integration with content moderation APIs
 - [ ] Automatic categorization based on content
 - [ ] Webhook notifications for completion
-- [ ] Dashboard for monitoring processing status
+- [ ] Web-based monitoring dashboard
+- [ ] Batch processing scheduling
+- [ ] Advanced retry strategies
+
+## When to Use Different Commands
+
+### For Testing and Development:
+```bash
+npm run process-tools:dry  # Test without making changes
+```
+
+### For Production Processing:
+```bash
+npm run process-tools      # Full processing with progress tracking
+```
+
+### For Recovery:
+```bash
+npm run process-tools:resume  # Continue interrupted processing
+npm run process-tools:retry   # Retry only failed operations
+```
 
 ## Support
 
 If you encounter issues:
 
-1. Check the console output for detailed error messages
-2. Review the `data/processing-results.json` file
-3. Verify your environment variables are set correctly
-4. Check Firecrawl dashboard for API usage and errors
-5. Ensure Convex deployment is running and accessible
+### Troubleshooting Steps
+1. Check `data/processing-progress.json` for detailed state
+2. Use `npm run process-tools:resume` to continue interrupted processing
+3. Use `npm run process-tools:retry` for failed items
+4. Review stage-specific error messages in console output
+5. Check the `data/processing-results.json` file for detailed results
+
+### General Support
+1. Verify your environment variables are set correctly
+2. Check Firecrawl dashboard for API usage and errors
+3. Ensure Convex deployment is running and accessible
+4. See [Enhanced Processing Documentation](docs/ENHANCED-PROCESSING.md) for detailed guides

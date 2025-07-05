@@ -1,4 +1,6 @@
-import { Authenticated, Unauthenticated, useQuery } from "convex/react";
+import { useQuery } from "convex/react";
+import { Authenticated, Unauthenticated } from "convex/react";
+import { Routes, Route, useLocation } from "react-router-dom";
 import { api } from "../convex/_generated/api";
 import { SignInForm } from "./SignInForm";
 import { Toaster } from "sonner";
@@ -6,16 +8,38 @@ import { SearchEngine } from "./components/SearchEngine";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
+import CookieConsent from "./components/CookieConsent";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
+import CookiePolicy from "./pages/CookiePolicy";
 import { Wrench } from "lucide-react";
 import { motion } from "framer-motion";
+import { useState } from "react";
 
 export default function App() {
+  const [cookiePreferences, setCookiePreferences] = useState(null);
+  
+  const handleCookieConsent = (preferences: any) => {
+    setCookiePreferences(preferences);
+    // Here you can implement analytics tracking based on preferences
+    if (preferences.analytics) {
+      // Initialize analytics
+      console.log('Analytics enabled');
+    }
+  };
+
   return (
     <ThemeProvider>
       <div className="min-h-screen bg-background text-foreground flex flex-col">
         <main className="flex-1">
-          <Content />
+          <Routes>
+            <Route path="/" element={<Content />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsOfService />} />
+            <Route path="/cookies" element={<CookiePolicy />} />
+          </Routes>
         </main>
+        <CookieConsent onAccept={handleCookieConsent} />
         <Toaster position="top-center" theme="system" richColors />
       </div>
     </ThemeProvider>

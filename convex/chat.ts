@@ -22,16 +22,17 @@ export const sendMessage = action({
       paginationOpts: { numItems: 5, cursor: null },
     });
 
-    // Generate AI response
-    const aiResponse: string = await generateAIResponse(args.message, toolRecommendations.page);
+    // Generate AI response with token tracking
+    const { response: aiResponse, tokenUsage } = await generateAIResponse(args.message, toolRecommendations.page);
     
-    // Save the chat message
+    // Save the chat message with token usage
     await ctx.runMutation(api.chat.saveChatMessage, {
       userId: userId || undefined,
       message: args.message,
       response: aiResponse,
       toolRecommendations: toolRecommendations.page.map((tool: Doc<"tools">) => tool._id),
       sessionId: args.sessionId,
+      tokenUsage,
     });
 
     return {
@@ -48,14 +49,29 @@ export const saveChatMessage = mutation({
     response: v.string(),
     toolRecommendations: v.optional(v.array(v.id("tools"))),
     sessionId: v.string(),
+    tokenUsage: v.optional(v.object({
+      promptTokens: v.number(),
+      completionTokens: v.number(),
+      totalTokens: v.number(),
+    })),
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert("chatMessages", args);
   },
 });
 
-// Helper function to transform storage IDs to image URLs
-function transformScreenshotUrl(screenshot: string | undefined): string | undefined {
+// Helper function to create SEO-friendly URL slug from tool name
+function createToolSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/-+/g, '-') // Replace multiple hyphens with single
+    .trim();
+}
+
+// Helper function to transform storage IDs to SEO-optimized image URLs
+function transformScreenshotUrl(screenshot: string | undefined, toolName?: string): string | undefined {
   if (!screenshot) return undefined;
   
   // If it's already a full URL (like seed data), return as-is
@@ -63,14 +79,20 @@ function transformScreenshotUrl(screenshot: string | undefined): string | undefi
     return screenshot;
   }
   
+  const baseUrl = process.env.CONVEX_SITE_URL || 'https://watchful-gazelle-766.convex.cloud';
+  
   // If it's a relative URL path starting with /image?id=, convert to full URL
   if (screenshot.startsWith('/image?id=')) {
-    const baseUrl = process.env.CONVEX_SITE_URL || 'https://watchful-gazelle-766.convex.cloud';
     return `${baseUrl}${screenshot}`;
   }
   
-  // If it's a storage ID, convert to image URL using Convex site URL
-  const baseUrl = process.env.CONVEX_SITE_URL || 'https://watchful-gazelle-766.convex.cloud';
+  // If we have a tool name, create SEO-friendly URL
+  if (toolName && screenshot.startsWith('kg')) {
+    const slug = createToolSlug(toolName);
+    return `${baseUrl}/images/${slug}-${screenshot}.png`;
+  }
+  
+  // Fallback to legacy format for storage IDs
   return `${baseUrl}/image?id=${screenshot}`;
 }
 
@@ -95,7 +117,7 @@ export const getChatHistory = query({
             ...message,
             recommendedTools: validTools.map((tool) => ({
               ...tool,
-              screenshot: transformScreenshotUrl(tool.screenshot)
+              screenshot: transformScreenshotUrl(tool.screenshot, tool.name)
             })),
           };
         }
@@ -107,7 +129,14 @@ export const getChatHistory = query({
   },
 });
 
-async function generateAIResponse(userMessage: string, relevantTools: Doc<"tools">[]): Promise<string> {
+async function generateAIResponse(userMessage: string, relevantTools: Doc<"tools">[]): Promise<{
+  response: string;
+  tokenUsage?: {
+    promptTokens: number;
+    completionTokens: number;
+    totalTokens: number;
+  };
+}> {
   const openai = new (await import("openai")).default({
     baseURL: process.env.CONVEX_OPENAI_BASE_URL,
     apiKey: process.env.OPENAI_API_KEY,
@@ -119,7 +148,7 @@ async function generateAIResponse(userMessage: string, relevantTools: Doc<"tools
       ).join('\n')}\n\n`
     : '';
 
-  const systemPrompt = `You are the TrendiTools Assistant for Trendi Tools - a search engine for digital tools. Help users discover the perfect digital tools for their needs.
+  const systemPrompt = `You are an AI assistant for a digital tools search engine. Help users discover the perfect digital tools for their needs.
 
 ${toolsContext}Your role:
 - Help users find digital tools that match their requirements
@@ -142,9 +171,21 @@ User message: ${userMessage}`;
       temperature: 0.7,
     });
 
-    return response.choices[0].message.content || "Here to help find the perfect digital tools! What are you looking for?";
+    const content = response.choices[0].message.content || "Here to help find the perfect digital tools! What are you looking for?";
+    
+    // Extract token usage from OpenAI response
+    const tokenUsage = response.usage ? {
+      promptTokens: response.usage.prompt_tokens,
+      completionTokens: response.usage.completion_tokens,
+      totalTokens: response.usage.total_tokens,
+    } : undefined;
+
+    return { response: content, tokenUsage };
   } catch (error) {
     console.error("AI response generation failed:", error);
-    return "Here to help discover amazing digital tools! What kind of tool are you looking for today?";
+    return { 
+      response: "Here to help discover amazing digital tools! What kind of tool are you looking for today?",
+      tokenUsage: undefined 
+    };
   }
 }

@@ -6,6 +6,7 @@ import { SignInForm } from "../SignInForm";
 import { Doc } from "../../convex/_generated/dataModel";
 import { Search, Bot, Wrench, Bookmark as BookmarkIcon } from "lucide-react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 interface HeaderProps {
   mode?: 'search' | 'ai' | 'saved';
@@ -15,13 +16,19 @@ interface HeaderProps {
 
 export function Header({ mode = 'search', onModeChange, onShowProfile }: HeaderProps) {
   const user = useQuery(api.users.get);
+  const navigate = useNavigate();
+
+  const handleLogoClick = () => {
+    navigate('/');
+  };
 
   return (
     <header className="bg-background/80 backdrop-blur-md">
       <div className="w-full px-3 sm:px-4 lg:px-6 py-4">
         <div className="flex items-center justify-between">
-          <motion.div 
-            className="flex items-center space-x-2"
+          <motion.button 
+            onClick={handleLogoClick}
+            className="flex items-center space-x-1 cursor-pointer"
             whileHover={{ scale: 1.02 }}
             transition={{ type: "spring", stiffness: 400, damping: 17 }}
           >
@@ -31,7 +38,7 @@ export function Header({ mode = 'search', onModeChange, onShowProfile }: HeaderP
             <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
               TrendiTools
             </h1>
-          </motion.div>
+          </motion.button>
 
           {/* Mode Toggle - Centered on desktop */}
           {user && onModeChange && (

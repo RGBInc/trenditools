@@ -37,6 +37,12 @@ const applicationTables = {
     response: v.string(),
     toolRecommendations: v.optional(v.array(v.id("tools"))),
     sessionId: v.string(),
+    // Token usage tracking for OpenAI API calls
+    tokenUsage: v.optional(v.object({
+      promptTokens: v.number(),
+      completionTokens: v.number(),
+      totalTokens: v.number(),
+    })),
   }).index("by_session", ["sessionId"]),
   
   searches: defineTable({

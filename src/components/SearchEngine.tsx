@@ -23,6 +23,7 @@ export function SearchEngine() {
   const [mode, setMode] = useState<'search' | 'ai' | 'saved'>('search');
   const [debouncedQuery, setDebouncedQuery] = useState("");
 
+  const [itemsPerPage] = useState(12);
 
   const [showProfile, setShowProfile] = useState(false);
   const [currentToolName, setCurrentToolName] = useState<string | null>(null);
@@ -58,9 +59,12 @@ export function SearchEngine() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedQuery(searchQuery);
+      setCurrentPage(1); // Reset to first page when search changes
     }, 300);
     return () => clearTimeout(timer);
   }, [searchQuery]);
+
+
 
   // Scroll to top when mode changes
   useEffect(() => {
@@ -69,6 +73,7 @@ export function SearchEngine() {
     }
   }, [mode, showProfile]);
 
+  // Always use paginated search - no more "show all" mode
   const {
     results: searchResults,
     status: searchStatus,
@@ -79,10 +84,14 @@ export function SearchEngine() {
       query: debouncedQuery,
       category: selectedCategory || undefined,
     },
-    { initialNumItems: 12 }
+    { initialNumItems: itemsPerPage }
   );
 
+  const currentPageResults = searchResults;
+
   const categories = useQuery(api.tools.getCategories);
+
+
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -185,9 +194,9 @@ export function SearchEngine() {
                 className="text-center py-8"
               >
                 <div className="max-w-2xl mx-auto space-y-4">
-                  <h2 className="text-2xl md:text-3xl font-bold">Find Your Perfect Tool</h2>
+                  <h2 className="text-2xl md:text-3xl font-bold">Find Digital Tools</h2>
                   <p className="text-base md:text-lg text-muted-foreground">
-                    Search through thousands of curated digital tools or let the TrendiTools Assistant help discover exactly what you need.
+                    Search thousands of curated digital tools or ask our AI assistant for specific recommendations.
                   </p>
                 </div>
               </motion.div>
@@ -216,7 +225,7 @@ export function SearchEngine() {
                   </div>
                   <div className={`grid ${getGridCols()} gap-4 md:gap-6`}>
                     <AnimatePresence>
-                      {searchResults?.map((tool, index) => (
+                      {currentPageResults?.map((tool, index) => (
                         <motion.div
                           key={tool._id}
                           initial={{ opacity: 0, y: 20 }}
@@ -235,7 +244,7 @@ export function SearchEngine() {
                     </div>
                   )}
 
-                  {searchStatus !== "LoadingFirstPage" && searchResults.length === 0 && (
+                  {searchStatus !== "LoadingFirstPage" && searchResults?.length === 0 && (
                     <motion.div 
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -247,7 +256,8 @@ export function SearchEngine() {
                     </motion.div>
                   )}
 
-                  {searchStatus !== "Exhausted" && searchResults.length > 0 && (
+                  {/* Load More for search/category */}
+                  {searchStatus !== "Exhausted" && searchResults && searchResults.length > 0 && (
                     <div className="flex justify-center">
                       <Button
                         onClick={() => loadMore(8)}

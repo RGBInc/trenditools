@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Doc, Id } from "../../convex/_generated/dataModel";
 import { ArrowLeft, ExternalLink, Bookmark, BookmarkCheck, Calendar, Globe, ImageIcon } from "lucide-react";
 import { Button } from "./ui/button";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { useMutation } from "convex/react";
+import SEOToolStructuredData from "./SEOToolStructuredData";
 
 interface ToolPageProps {
   toolId: Id<"tools">;
@@ -19,10 +19,24 @@ export function ToolPage({ toolId, onBack }: ToolPageProps) {
   const [imageLoading, setImageLoading] = useState(true);
   const tool = useQuery(api.tools.getTool, { id: toolId });
 
-  // Reset image states when tool changes
+  // Preload image for faster loading
   useEffect(() => {
-    setImageError(false);
-    setImageLoading(true);
+    if (tool?.screenshot) {
+      setImageError(false);
+      setImageLoading(true);
+      
+      // Preload the image
+      const img = new Image();
+      img.onload = () => {
+        setImageLoading(false);
+        setImageError(false);
+      };
+      img.onerror = () => {
+        setImageLoading(false);
+        setImageError(true);
+      };
+      img.src = tool.screenshot;
+    }
   }, [tool?.screenshot]);
   const user = useQuery(api.users.get);
   const userBookmarks = useQuery(api.users.getBookmarks);
@@ -81,6 +95,8 @@ export function ToolPage({ toolId, onBack }: ToolPageProps) {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* SEO Structured Data */}
+      <SEOToolStructuredData tool={tool} />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Button */}
         <motion.div 
@@ -159,36 +175,37 @@ export function ToolPage({ toolId, onBack }: ToolPageProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="rounded-xl overflow-hidden bg-muted"
+              className="rounded-xl overflow-hidden bg-muted aspect-video relative"
             >
               {tool.screenshot ? (
-                <div className="relative">
+                <>
                   {imageLoading && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-muted">
-                      <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                    <div className="absolute inset-0 flex items-center justify-center bg-muted z-10">
+                      <div className="animate-pulse flex flex-col items-center space-y-2">
+                        <ImageIcon className="w-12 h-12 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">Loading preview...</span>
+                      </div>
                     </div>
                   )}
-                  {imageError ? (
-                    <div className="flex flex-col items-center justify-center h-64 bg-muted text-muted-foreground">
-                      <ImageIcon className="w-16 h-16 mb-2" />
-                      <p className="text-sm">Image failed to load</p>
+                  <img
+                    src={tool.screenshot}
+                    alt={`${tool.name} screenshot`}
+                    className={`w-full h-full object-cover transition-all duration-500 ${
+                      imageLoading ? 'opacity-0 scale-105' : 'opacity-100 scale-100'
+                    }`}
+                    loading="eager"
+                    decoding="async"
+                  />
+                  {imageError && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted text-muted-foreground">
+                      <ImageIcon className="w-16 h-16 mb-2 opacity-50" />
+                      <p className="text-sm">Failed to load preview</p>
                     </div>
-                  ) : (
-                    <img
-                      src={tool.screenshot}
-                      alt={`${tool.name} screenshot`}
-                      className="w-full h-auto object-cover"
-                      onLoad={() => setImageLoading(false)}
-                      onError={() => {
-                        setImageLoading(false);
-                        setImageError(true);
-                      }}
-                    />
                   )}
-                </div>
+                </>
               ) : (
-                <div className="flex flex-col items-center justify-center h-64 bg-muted text-muted-foreground">
-                  <ImageIcon className="w-16 h-16 mb-2" />
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted text-muted-foreground">
+                  <ImageIcon className="w-16 h-16 mb-2 opacity-50" />
                   <p className="text-sm">No preview available</p>
                 </div>
               )}

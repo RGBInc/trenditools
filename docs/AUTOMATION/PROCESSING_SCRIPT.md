@@ -2,7 +2,9 @@
 
 ## Overview
 
-The `process-tools.js` script is an automated pipeline that extracts, enriches, and processes tool data from URLs using AI-powered analysis and screenshot capture.
+TrendiTools provides a comprehensive processing script (`process-tools.js`) for extracting, enriching, and processing tool data from URLs.
+
+The script is an advanced processing pipeline with robust progress tracking, resume functionality, and granular error recovery - perfect for processing large datasets (1000+ URLs) with confidence.
 
 ## Features
 
@@ -13,15 +15,44 @@ The `process-tools.js` script is an automated pipeline that extracts, enriches, 
 - 🔄 **Dry Run Mode**: Test without making changes
 - 📊 **Progress Tracking**: Real-time processing feedback
 
+## Advanced Script Features
+
+The processing script includes:
+
+### 🎯 **Granular Progress Tracking**
+- Tracks 9 distinct processing stages per URL
+- Persistent state saved to `data/processing-progress.json`
+- Field-level completion status (extraction, screenshot, upload, etc.)
+
+### 🔄 **Resume Functionality**
+- Automatically resumes from interruption point
+- Skips already completed stages
+- No re-processing or re-uploading of existing data
+
+### 🛠️ **Advanced Error Recovery**
+- Field-specific retry capabilities
+- Selective processing of failed fields only
+- Detailed error tracking and reporting
+
+### 📊 **Enhanced Monitoring**
+- Real-time progress indicators
+- Comprehensive status reporting
+- Processing stage breakdown
+
 ## Usage
 
-### Basic Commands
 ```bash
-# Process all URLs in CSV file
+# Dry run with progress tracking
+npm run process-tools:dry
+
+# Live processing with progress tracking
 npm run process-tools
 
-# Dry run (test without saving)
-npm run process-tools:dry
+# Resume interrupted processing
+npm run process-tools:resume
+
+# Retry only failed fields
+npm run process-tools:retry
 
 # Process specific URL
 node scripts/process-tools.js --url="https://example.com"
@@ -39,6 +70,8 @@ node scripts/process-tools.js --url="https://example.com"
 
 ## Configuration
 
+Edit `scripts/process-tools.js` to modify:
+
 ### Environment Variables
 ```bash
 # Required in .env.local
@@ -51,12 +84,55 @@ OPENAI_API_KEY=sk-your-openai-key-here  # Optional for enhanced analysis
 ```javascript
 const CONFIG = {
   csvPath: path.join(__dirname, '../data/Trendi Tools - Final.csv'),
-  screenshotDir: path.join(__dirname, '../screenshots'),
+  screenshotDir: path.join(__dirname, '../data/screenshots'),
   batchSize: 5,                    // Process 5 URLs at a time
   delayBetweenRequests: 2000,      // 2 seconds between requests
   screenshotTimeout: 30000,        // 30 seconds max per screenshot
   maxRetries: 3                    // Retry failed requests
 };
+```
+
+### Progress Tracking States
+The script tracks these 9 processing stages:
+
+```javascript
+const PROCESSING_STAGES = {
+  PENDING: 'pending',           // Initial state
+  EXTRACTING: 'extracting',     // AI data extraction
+  EXTRACTED: 'extracted',       // Data extraction complete
+  SCREENSHOT: 'screenshot',     // Taking screenshot
+  SCREENSHOT_DONE: 'screenshot_done', // Screenshot complete
+  UPLOADING: 'uploading',       // Uploading to Convex
+  UPLOADED: 'uploaded',         // Upload complete
+  SAVING: 'saving',            // Saving to database
+  COMPLETED: 'completed'        // Fully processed
+};
+```
+
+### Progress File Structure
+```json
+{
+  "lastProcessedIndex": 45,
+  "totalUrls": 658,
+  "startTime": "2024-01-15T10:30:00.000Z",
+  "urlProgress": {
+    "https://example.com": {
+      "status": "completed",
+      "toolId": "kg2abc123...",
+      "extractedData": { /* ... */ },
+      "screenshotPath": "data/screenshots/example_com.png",
+      "storageId": "kg2def456...",
+      "lastUpdated": "2024-01-15T10:32:15.000Z",
+      "processingTime": 12.5,
+      "errors": []
+    }
+  },
+  "summary": {
+    "completed": 45,
+    "failed": 2,
+    "pending": 611
+  }
+}
 ```
 
 ## Data Processing Pipeline
@@ -112,7 +188,7 @@ const screenshotConfig = {
 2. Navigate to URL
 3. Wait for page load
 4. Capture screenshot
-5. Save to `screenshots/` directory
+5. Save to `data/screenshots/` directory
 
 ### 4. Storage Stage
 **Service**: Convex Cloud Storage
@@ -165,6 +241,52 @@ const processWithRetry = async (url, maxRetries = 3) => {
 4. **Storage Failures**: Retry upload process
 5. **Database Failures**: Log and continue
 
+### Field-Specific Recovery
+The script can retry individual processing stages:
+
+```bash
+# Retry only failed extractions
+npm run process-tools:retry -- --stage=extraction
+
+# Retry only failed screenshots
+npm run process-tools:retry -- --stage=screenshot
+
+# Retry only failed uploads
+npm run process-tools:retry -- --stage=upload
+```
+
+### Automatic Resume
+```javascript
+// Script automatically detects interruptions
+const resumeProcessing = async () => {
+  const progress = await loadProgress();
+  const lastIndex = progress.lastProcessedIndex || 0;
+  
+  console.log(`🔄 Resuming from URL ${lastIndex + 1}/${progress.totalUrls}`);
+  
+  // Skip completed URLs, process remaining
+  return processFromIndex(lastIndex + 1);
+};
+```
+
+### Granular Error Tracking
+```json
+{
+  "url": "https://example.com",
+  "status": "failed",
+  "errors": [
+    {
+      "stage": "screenshot",
+      "error": "Timeout after 30s",
+      "timestamp": "2024-01-15T10:32:00.000Z",
+      "retryCount": 3
+    }
+  ],
+  "completedStages": ["extracted", "uploaded"],
+  "failedStages": ["screenshot"]
+}
+```
+
 ## Output and Reporting
 
 ### Console Output
@@ -204,6 +326,54 @@ const processWithRetry = async (url, maxRetries = 3) => {
     "successRate": 100,
     "averageProcessingTime": 12.5,
     "totalDuration": 62.3
+  }
+}
+```
+
+## Script Output
+
+### Progress Monitoring
+```
+╔══════════════════════════════════════════════════════════════╗
+║                🚀 TOOL PROCESSOR v2.0                       ║
+╚══════════════════════════════════════════════════════════════╝
+
+📊 Processing Status
+═════════════════════════════════════════════════════════════════
+   🎯 Progress: 45/658 URLs (6.8%)
+   ✅ Completed: 43
+   ❌ Failed: 2
+   ⏳ Pending: 613
+   🔄 Current: Extracting data from https://example.com
+   ⏱️  Elapsed: 12m 34s
+   📈 Success rate: 95.6%
+```
+
+### Results Files
+
+**Progress File**: `data/processing-progress.json`
+- Real-time processing state
+- Granular field completion status
+- Resume capability data
+
+**Results File**: `data/processing-results.json`
+- Final processing summary
+- Detailed error analysis
+- Performance metrics
+
+### Stage-by-Stage Reporting
+```json
+{
+  "stageBreakdown": {
+    "extraction": { "completed": 45, "failed": 2, "pending": 611 },
+    "screenshot": { "completed": 43, "failed": 4, "pending": 611 },
+    "upload": { "completed": 43, "failed": 0, "pending": 615 },
+    "database": { "completed": 43, "failed": 0, "pending": 615 }
+  },
+  "retryAnalysis": {
+    "totalRetries": 8,
+    "successfulRetries": 6,
+    "failedRetries": 2
   }
 }
 ```
@@ -302,7 +472,7 @@ const createSafeFilename = (url) => {
 ### Cleanup Commands
 ```bash
 # Remove old screenshots
-find screenshots/ -name "*.png" -mtime +30 -delete
+find data/screenshots/ -name "*.png" -mtime +30 -delete
 
 # Clean processing results
 rm -f data/processing-results-*.json
@@ -344,6 +514,30 @@ node -e "console.log(process.env.FIRECRAWL_API_KEY ? 'API Key found' : 'API Key 
 head -5 "data/Trendi Tools - Final.csv"
 ```
 
+## Script Usage Recommendations
+
+### Ideal Use Cases
+- **Large datasets** (100+ URLs)
+- **Production environments**
+- **Long-running processes** (>30 minutes)
+- **Critical data processing** where interruption recovery is important
+- **Batch processing** with monitoring requirements
+- **Small datasets** for testing or prototyping
+- **Development environments**
+
+### Resume Capability
+The script automatically detects existing data and can resume processing:
+
+```bash
+# Resume interrupted processing
+npm run process-tools:resume
+
+# The script will:
+#    - Skip already processed URLs
+#    - Continue from where it left off
+#    - Provide detailed progress tracking
+```
+
 ---
 
-*This script is the core automation engine for TrendiTools data processing. It transforms raw URLs into rich, searchable tool data with automated screenshots and AI-powered content analysis.*
+*This script is the core automation engine for TrendiTools data processing. It transforms raw URLs into rich, searchable tool data with automated screenshots and AI-powered content analysis, providing enterprise-grade reliability and monitoring for large-scale processing.*

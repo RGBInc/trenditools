@@ -95,13 +95,13 @@ export function ToolCard({ tool, onViewDetails, onViewToolPage }: ToolCardProps)
         </div>
 
         {/* Screenshot */}
-        <div className="aspect-video rounded-lg overflow-hidden bg-muted">
-          {tool.screenshot && !imageError ? (
+        <div className="aspect-video rounded-lg overflow-hidden bg-muted relative">
+          {tool.screenshot ? (
             <>
               {imageLoading && (
-                <div className="w-full h-full flex items-center justify-center">
+                <div className="absolute inset-0 flex items-center justify-center bg-muted z-10">
                   <div className="animate-pulse flex flex-col items-center space-y-2">
-                    <ImageIcon className="w-8 h-8 text-muted-foreground" />
+                    <ImageIcon className="w-6 h-6 text-muted-foreground" />
                     <span className="text-xs text-muted-foreground">Loading...</span>
                   </div>
                 </div>
@@ -109,27 +109,34 @@ export function ToolCard({ tool, onViewDetails, onViewToolPage }: ToolCardProps)
               <img
                 src={tool.screenshot}
                 alt={`${tool.name} screenshot`}
-                className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ${
+                className={`w-full h-full object-cover group-hover:scale-105 transition-all duration-300 ${
                   imageLoading ? 'opacity-0' : 'opacity-100'
                 }`}
+                loading="lazy"
+                decoding="async"
                 onLoad={() => {
                   setImageLoading(false);
                   setImageError(false);
                 }}
                 onError={() => {
-                  console.error('Failed to load image for', tool.name, ':', tool.screenshot);
                   setImageError(true);
                   setImageLoading(false);
                 }}
               />
+              {imageError && (
+                <div className="absolute inset-0 flex items-center justify-center bg-muted">
+                  <div className="flex flex-col items-center space-y-2">
+                    <ImageIcon className="w-6 h-6 text-muted-foreground opacity-50" />
+                    <span className="text-xs text-muted-foreground">Failed to load</span>
+                  </div>
+                </div>
+              )}
             </>
           ) : (
-            <div className="w-full h-full flex items-center justify-center">
+            <div className="absolute inset-0 flex items-center justify-center bg-muted">
               <div className="flex flex-col items-center space-y-2">
-                <ImageIcon className="w-8 h-8 text-muted-foreground" />
-                <span className="text-xs text-muted-foreground">
-                  {tool.screenshot ? 'Failed to load image' : 'No preview available'}
-                </span>
+                <ImageIcon className="w-6 h-6 text-muted-foreground opacity-50" />
+                <span className="text-xs text-muted-foreground">No preview</span>
               </div>
             </div>
           )}

@@ -1,11 +1,21 @@
-import { query, mutation } from "./_generated/server";
+import { query, mutation, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 import { paginationOptsValidator } from "convex/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { Doc } from "./_generated/dataModel";
 
-// Helper function to transform storage IDs to image URLs
-function transformScreenshotUrl(screenshot: string | undefined, ctx: any): string | undefined {
+// Helper function to create SEO-friendly URL slug from tool name
+function createToolSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/-+/g, '-') // Replace multiple hyphens with single
+    .trim();
+}
+
+// Helper function to transform storage IDs to SEO-optimized image URLs
+function transformScreenshotUrl(screenshot: string | undefined, ctx: any, toolName?: string): string | undefined {
   if (!screenshot) return undefined;
   
   // If it's already a full URL (like seed data), return as-is
@@ -13,15 +23,20 @@ function transformScreenshotUrl(screenshot: string | undefined, ctx: any): strin
     return screenshot;
   }
   
+  const baseUrl = process.env.CONVEX_SITE_URL || 'https://watchful-gazelle-766.convex.cloud';
+  
   // If it's a relative URL path starting with /image?id=, convert to full URL
   if (screenshot.startsWith('/image?id=')) {
-    const baseUrl = process.env.CONVEX_SITE_URL || 'https://watchful-gazelle-766.convex.cloud';
     return `${baseUrl}${screenshot}`;
   }
   
-  // If it's a storage ID, convert to image URL using Convex site URL
-  // Use CONVEX_SITE_URL for backend operations, fallback to the deployment URL
-  const baseUrl = process.env.CONVEX_SITE_URL || 'https://watchful-gazelle-766.convex.cloud';
+  // If we have a tool name, create SEO-friendly URL
+  if (toolName && screenshot.startsWith('kg')) {
+    const slug = createToolSlug(toolName);
+    return `${baseUrl}/images/${slug}-${screenshot}.png`;
+  }
+  
+  // Fallback to legacy format for storage IDs
   return `${baseUrl}/image?id=${screenshot}`;
 }
 
@@ -109,7 +124,7 @@ export const searchTools = query({
         page: results.page.map((tool: Doc<"tools">) => ({ 
           ...tool, 
           isBookmarked: false,
-          screenshot: transformScreenshotUrl(tool.screenshot, ctx)
+          screenshot: transformScreenshotUrl(tool.screenshot, ctx, tool.name)
         })),
       };
     }
@@ -126,7 +141,7 @@ export const searchTools = query({
       page: results.page.map((tool: Doc<"tools">) => ({
         ...tool,
         isBookmarked: bookmarkedToolIds.has(tool._id),
-        screenshot: transformScreenshotUrl(tool.screenshot, ctx)
+        screenshot: transformScreenshotUrl(tool.screenshot, ctx, tool.name)
       })),
     };
   },
@@ -142,10 +157,10 @@ export const getFeaturedTools = query({
 
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      return tools.map((tool) => ({ 
+      return tools.map((tool) => ({
         ...tool, 
         isBookmarked: false,
-        screenshot: transformScreenshotUrl(tool.screenshot, ctx)
+        screenshot: transformScreenshotUrl(tool.screenshot, ctx, tool.name)
       }));
     }
 
@@ -159,7 +174,7 @@ export const getFeaturedTools = query({
     return tools.map((tool) => ({
       ...tool,
       isBookmarked: bookmarkedToolIds.has(tool._id),
-      screenshot: transformScreenshotUrl(tool.screenshot, ctx)
+      screenshot: transformScreenshotUrl(tool.screenshot, ctx, tool.name)
     }));
   },
 });
@@ -185,7 +200,7 @@ export const getTool = query({
       return { 
         ...tool, 
         isBookmarked: false,
-        screenshot: transformScreenshotUrl(tool.screenshot, ctx)
+        screenshot: transformScreenshotUrl(tool.screenshot, ctx, tool.name)
       };
     }
     const bookmark = await ctx.db
@@ -195,7 +210,7 @@ export const getTool = query({
     return { 
       ...tool, 
       isBookmarked: !!bookmark,
-      screenshot: transformScreenshotUrl(tool.screenshot, ctx)
+      screenshot: transformScreenshotUrl(tool.screenshot, ctx, tool.name)
     };
   },
 });
@@ -212,7 +227,7 @@ export const getByUrl = query({
     }
     return {
       ...tool,
-      screenshot: transformScreenshotUrl(tool.screenshot, ctx)
+      screenshot: transformScreenshotUrl(tool.screenshot, ctx, tool.name)
     };
   },
 });
@@ -328,12 +343,7 @@ export const getToolByName = query({
   },
 });
 
-export const getAllTools = query({
-  args: {},
-  handler: async (ctx) => {
-    return await ctx.db.query("tools").collect();
-  },
-});
+
 
 export const updateTool = mutation({
   args: {
@@ -452,5 +462,18 @@ export const fixMalformedScreenshots = mutation({
     }
     
     return fixes;
+  },
+});
+
+// Query to get tool by storage ID for SEO image serving
+export const getToolByStorageId = query({
+  args: { storageId: v.string() },
+  handler: async (ctx, args) => {
+    const tool = await ctx.db
+      .query("tools")
+      .filter((q) => q.eq(q.field("screenshot"), args.storageId))
+      .first();
+    
+    return tool;
   },
 });

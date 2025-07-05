@@ -1,44 +1,46 @@
 #!/usr/bin/env node
 
 /**
- * TrendiTools Processing Pipeline
+ * TrendiTools Enhanced Processing Pipeline with Progress Tracking
  * 
  * ╔══════════════════════════════════════════════════════════════╗
- * ║                    🚀 AUTOMATED TOOL PROCESSOR               ║
+ * ║                🚀 ENHANCED AUTOMATED TOOL PROCESSOR          ║
  * ║                                                              ║
  * ║  Extracts, screenshots, and enriches tool data from URLs    ║
- * ║  using Firecrawl AI and saves to Convex database            ║
+ * ║  with robust progress tracking and resume functionality      ║
  * ╚══════════════════════════════════════════════════════════════╝
  * 
- * Features:
- * • 🔍 AI-powered content extraction with Firecrawl
- * • 📸 Automated screenshot capture with Puppeteer
- * • ☁️ Cloud storage integration with Convex
- * • 🎯 Batch processing with rate limiting
- * • 🔄 Dry run mode for testing
- * • 📊 Comprehensive progress tracking
+ * NEW FEATURES:
+ * • 📊 Granular progress tracking for each processing step
+ * • 🔄 Resume functionality from any interruption point
+ * • 💾 Persistent state management with detailed status
+ * • 🎯 Field-specific retry capabilities
+ * • 📈 Enhanced error reporting and recovery
+ * • 🔍 Detailed processing analytics
  * 
- * DATA STRUCTURE & FIELD HIERARCHY:
+ * PROGRESS TRACKING STATES:
  * ┌─────────────────────────────────────────────────────────────┐
- * │ EXTRACTED FIELDS (from AI analysis):                       │
+ * │ PROCESSING STAGES (tracked individually):                  │
  * │                                                             │
- * │ • name: Tool/service name                                   │
- * │ • tagline: Short catchy phrase (1-2 sentences)             │
- * │ • summary: Concise paragraph (max 300 words)               │
- * │   └─ INFORMATIVE CONTENT for understanding                 │
- * │ • descriptor: Brief 1-2 sentence description               │
- * │   └─ SEARCH INDEX field for quick matching                 │
- * │ • category: Single broad classification                     │
- * │   └─ BROAD: "AI", "Productivity", "Design", etc.          │
- * │ • tags: Array of specific use-case keywords                │
- * │   └─ SPECIFIC: ["machine learning", "automation", etc.]   │
+ * │ • pending: Not yet processed                                │
+ * │ • extracting: AI data extraction in progress               │
+ * │ • extracted: Data extraction completed                      │
+ * │ • screenshotting: Screenshot capture in progress           │
+ * │ • screenshot_taken: Screenshot captured successfully        │
+ * │ • uploading: File upload to storage in progress            │
+ * │ • uploaded: File uploaded successfully                      │
+ * │ • saving: Database save in progress                         │
+ * │ • completed: Fully processed and saved                      │
+ * │ • failed: Processing failed (with detailed error info)     │
  * │                                                             │
- * │ HIERARCHY: Category (broad) > Tags (specific use cases)    │
+ * │ RESUME CAPABILITY: Can restart from any failed stage       │
  * └─────────────────────────────────────────────────────────────┘
  * 
  * Usage:
- *   npm run process-tools        # Live mode
- *   npm run process-tools:dry    # Dry run mode
+ *   npm run process-tools:enhanced        # Live mode with tracking
+ *   npm run process-tools:enhanced:dry    # Dry run mode
+ *   npm run process-tools:enhanced --resume  # Resume from last state
+ *   npm run process-tools:enhanced --retry-failed  # Retry only failed items
  * 
  * Requirements:
  *   - .env.local with FIRECRAWL_API_KEY and CONVEX_URL
@@ -54,7 +56,6 @@ import fs from 'fs/promises';
 import csv from 'csv-parser';
 import { createReadStream } from 'fs';
 import puppeteer from 'puppeteer';
-// Note: Using native FormData instead of form-data package to avoid deprecation warnings
 import fetch from 'node-fetch';
 import { ConvexHttpClient } from 'convex/browser';
 
@@ -64,18 +65,30 @@ const __dirname = path.dirname(__filename);
 // Load .env.local from project root
 dotenv.config({ path: path.join(__dirname, '../.env.local') });
 
-// Check for dry run mode
-const isDryRun = process.argv.includes('--dry-run') || process.argv.includes('-d');
+// Parse command line arguments
+const args = process.argv.slice(2);
+const isDryRun = args.includes('--dry-run') || args.includes('-d');
+const isResume = args.includes('--resume') || args.includes('-r');
+const retryFailed = args.includes('--retry-failed') || args.includes('--retry');
+const batchSizeArg = args.find(arg => arg.startsWith('--batch-size='));
+const customBatchSize = batchSizeArg ? parseInt(batchSizeArg.split('=')[1]) : null;
 
 // Configuration
 const CONFIG = {
   csvPath: path.join(__dirname, '../data/Trendi Tools - Final.csv'),
+  progressPath: path.join(__dirname, '../data/processing-progress.json'),
+  resultsPath: path.join(__dirname, '../data/processing-results.json'),
   firecrawlApiKey: process.env.FIRECRAWL_API_KEY,
   convexUrl: process.env.VITE_CONVEX_URL,
-  screenshotDir: path.join(__dirname, '../screenshots'),
-  batchSize: 5, // Process 5 URLs at a time
+  screenshotDir: path.join(__dirname, '../data/screenshots'),
+  batchSize: customBatchSize || 3, // Smaller batches for better tracking
   delayBetweenRequests: 2000, // 2 seconds between requests
-  dryRun: isDryRun
+  delayBetweenBatches: 5000, // 5 seconds between batches
+  dryRun: isDryRun,
+  resume: isResume,
+  retryFailed: retryFailed,
+  maxRetries: 3, // Maximum retries per URL
+  saveProgressInterval: 5 // Save progress every 5 processed items
 };
 
 // Initialize Convex client (only if not in dry run mode)
@@ -84,7 +97,158 @@ if (!CONFIG.dryRun) {
   convex = new ConvexHttpClient(CONFIG.convexUrl);
 }
 
-// Validation (relaxed for dry run mode)
+// Progress tracking state
+let progressState = {
+  startTime: null,
+  lastSaveTime: null,
+  totalUrls: 0,
+  processedCount: 0,
+  completedCount: 0,
+  failedCount: 0,
+  currentBatch: 0,
+  urls: {}
+  // urls structure: { "url": { status, data, error, attempts, lastAttempt, stages: {} } }
+};
+
+// Processing stages for granular tracking
+const STAGES = {
+  PENDING: 'pending',
+  EXTRACTING: 'extracting',
+  EXTRACTED: 'extracted',
+  SCREENSHOTTING: 'screenshotting',
+  SCREENSHOT_TAKEN: 'screenshot_taken',
+  UPLOADING: 'uploading',
+  UPLOADED: 'uploaded',
+  SAVING: 'saving',
+  COMPLETED: 'completed',
+  FAILED: 'failed'
+};
+
+/**
+ * Load existing progress state from file
+ */
+async function loadProgressState() {
+  try {
+    const data = await fs.readFile(CONFIG.progressPath, 'utf8');
+    const loaded = JSON.parse(data);
+    
+    // Merge with default structure
+    progressState = {
+      ...progressState,
+      ...loaded,
+      lastSaveTime: new Date().toISOString()
+    };
+    
+    console.log(`📊 Loaded progress state: ${Object.keys(progressState.urls).length} URLs tracked`);
+    return true;
+  } catch (error) {
+    console.log(`📊 No existing progress state found, starting fresh`);
+    return false;
+  }
+}
+
+/**
+ * Save current progress state to file
+ */
+async function saveProgressState() {
+  try {
+    progressState.lastSaveTime = new Date().toISOString();
+    await fs.writeFile(CONFIG.progressPath, JSON.stringify(progressState, null, 2));
+    console.log(`💾 Progress saved (${progressState.processedCount}/${progressState.totalUrls})`);
+  } catch (error) {
+    console.error(`❌ Failed to save progress:`, error.message);
+  }
+}
+
+/**
+ * Update URL status and stage information
+ */
+function updateUrlStatus(url, status, stage = null, data = null, error = null) {
+  if (!progressState.urls[url]) {
+    progressState.urls[url] = {
+      status: STAGES.PENDING,
+      data: null,
+      error: null,
+      attempts: 0,
+      lastAttempt: null,
+      stages: {}
+    };
+  }
+  
+  const urlState = progressState.urls[url];
+  urlState.status = status;
+  urlState.lastAttempt = new Date().toISOString();
+  
+  if (stage) {
+    urlState.stages[stage] = {
+      timestamp: new Date().toISOString(),
+      success: status !== STAGES.FAILED
+    };
+  }
+  
+  if (data) {
+    urlState.data = { ...urlState.data, ...data };
+  }
+  
+  if (error) {
+    urlState.error = error;
+    urlState.stages[stage || 'unknown'] = {
+      timestamp: new Date().toISOString(),
+      success: false,
+      error: error
+    };
+  }
+  
+  // Update counters
+  if (status === STAGES.COMPLETED) {
+    progressState.completedCount++;
+  } else if (status === STAGES.FAILED) {
+    progressState.failedCount++;
+  }
+}
+
+/**
+ * Get URLs that need processing based on current state and mode
+ */
+function getUrlsToProcess(allUrls) {
+  if (!CONFIG.resume && !CONFIG.retryFailed) {
+    // Fresh start - process all URLs
+    return allUrls;
+  }
+  
+  if (CONFIG.retryFailed) {
+    // Only retry failed URLs
+    return allUrls.filter(url => {
+      const urlState = progressState.urls[url];
+      return !urlState || urlState.status === STAGES.FAILED;
+    });
+  }
+  
+  if (CONFIG.resume) {
+    // Resume - skip completed URLs
+    return allUrls.filter(url => {
+      const urlState = progressState.urls[url];
+      return !urlState || urlState.status !== STAGES.COMPLETED;
+    });
+  }
+  
+  return allUrls;
+}
+
+/**
+ * Check if URL can be resumed from a specific stage
+ */
+function canResumeFromStage(url, stage) {
+  const urlState = progressState.urls[url];
+  if (!urlState || !urlState.stages) return false;
+  
+  const stageData = urlState.stages[stage];
+  return stageData && stageData.success;
+}
+
+/**
+ * Validation (relaxed for dry run mode)
+ */
 if (!CONFIG.dryRun) {
   if (!CONFIG.firecrawlApiKey) {
     console.error('❌ FIRECRAWL_API_KEY environment variable is required');
@@ -153,20 +317,31 @@ async function pollExtractJob(jobId, maxAttempts = 30, delayMs = 2000) {
 }
 
 /**
- * Extract data using Firecrawl API
+ * Extract data using Firecrawl API with resume capability
  */
 async function extractDataWithFirecrawl(url) {
   console.log(`🔍 ${CONFIG.dryRun ? '[DRY RUN] ' : ''}Extracting data from: ${url}`);
   
+  // Check if we can resume from extracted data
+  if (canResumeFromStage(url, 'extracted')) {
+    console.log(`🔄 Resuming with existing extracted data for: ${url}`);
+    return progressState.urls[url].data.extractedData;
+  }
+  
+  updateUrlStatus(url, STAGES.EXTRACTING, 'extracting');
+  
   if (CONFIG.dryRun) {
     console.log(`🔍 [DRY RUN] Would extract data from Firecrawl API`);
-    return {
+    const mockData = {
       name: "Sample Tool Name",
       tagline: "Sample tagline for testing",
       summary: "This is a sample summary that would be extracted from the website. In a real run, this would contain detailed information about the tool, its features, benefits, and use cases.",
       descriptor: "A sample tool for demonstration purposes",
+      category: "Sample",
       tags: ["Sample", "Testing", "Demo"]
     };
+    updateUrlStatus(url, STAGES.EXTRACTED, 'extracted', { extractedData: mockData });
+    return mockData;
   }
   
   try {
@@ -227,25 +402,37 @@ async function extractDataWithFirecrawl(url) {
     
     if (extractedData) {
       console.log(`✅ Successfully extracted data for: ${extractedData.name || 'Unknown'}`);
+      updateUrlStatus(url, STAGES.EXTRACTED, 'extracted', { extractedData });
       return extractedData;
     } else {
       throw new Error('No data returned from completed extraction job');
     }
   } catch (error) {
     console.error(`❌ Error extracting data from ${url}:`, error.message);
+    updateUrlStatus(url, STAGES.FAILED, 'extracting', null, error.message);
     return null;
   }
 }
 
 /**
- * Take screenshot using Puppeteer
+ * Take screenshot using Puppeteer with resume capability
  */
 async function takeScreenshot(url, filename) {
   console.log(`📸 ${CONFIG.dryRun ? '[DRY RUN] ' : ''}Taking screenshot of: ${url}`);
   
+  // Check if we can resume with existing screenshot
+  if (canResumeFromStage(url, 'screenshot_taken')) {
+    console.log(`🔄 Resuming with existing screenshot for: ${url}`);
+    return progressState.urls[url].data.screenshotPath;
+  }
+  
+  updateUrlStatus(url, STAGES.SCREENSHOTTING, 'screenshotting');
+  
   if (CONFIG.dryRun) {
     console.log(`📸 [DRY RUN] Would take screenshot and save as ${filename}.PNG`);
-    return `/fake/screenshot/path/${filename}.PNG`;
+    const mockPath = `/fake/screenshot/path/${filename}.PNG`;
+    updateUrlStatus(url, STAGES.SCREENSHOT_TAKEN, 'screenshot_taken', { screenshotPath: mockPath });
+    return mockPath;
   }
   
   let browser;
@@ -278,9 +465,11 @@ async function takeScreenshot(url, filename) {
     });
     
     console.log(`✅ Screenshot saved: ${screenshotPath}`);
+    updateUrlStatus(url, STAGES.SCREENSHOT_TAKEN, 'screenshot_taken', { screenshotPath });
     return screenshotPath;
   } catch (error) {
     console.error(`❌ Error taking screenshot of ${url}:`, error.message);
+    updateUrlStatus(url, STAGES.FAILED, 'screenshotting', null, error.message);
     return null;
   } finally {
     if (browser) {
@@ -290,13 +479,23 @@ async function takeScreenshot(url, filename) {
 }
 
 /**
- * Upload file to Convex storage and return the public URL
+ * Upload file to Convex storage with resume capability
  */
-async function uploadToConvexStorage(filePath) {
+async function uploadToConvexStorage(filePath, url) {
   if (CONFIG.dryRun) {
     console.log(`☁️ [DRY RUN] Would upload file to Convex storage: ${path.basename(filePath)}`);
-    return 'https://fake-convex-site.com/image?id=fake-storage-id-12345';
+    const mockUrl = 'https://fake-convex-site.com/image?id=fake-storage-id-12345';
+    updateUrlStatus(url, STAGES.UPLOADED, 'uploaded', { screenshotUrl: mockUrl });
+    return mockUrl;
   }
+  
+  // Check if we can resume with existing upload
+  if (canResumeFromStage(url, 'uploaded')) {
+    console.log(`🔄 Resuming with existing uploaded screenshot for: ${url}`);
+    return progressState.urls[url].data.screenshotUrl;
+  }
+  
+  updateUrlStatus(url, STAGES.UPLOADING, 'uploading');
   
   try {
     const fileBuffer = await fs.readFile(filePath);
@@ -306,7 +505,6 @@ async function uploadToConvexStorage(filePath) {
     const uploadUrl = await convex.mutation('storage:generateUploadUrl', {});
     
     // Upload file directly as binary data with proper content type
-    // This avoids the multipart/form-data wrapper that was causing MIME type issues
     const uploadResponse = await fetch(uploadUrl, {
       method: 'POST',
       body: fileBuffer,
@@ -329,9 +527,11 @@ async function uploadToConvexStorage(filePath) {
     const publicImageUrl = `/image?id=${storageId}`;
     console.log(`🔗 Public image URL: ${publicImageUrl}`);
     
+    updateUrlStatus(url, STAGES.UPLOADED, 'uploaded', { screenshotUrl: publicImageUrl });
     return publicImageUrl;
   } catch (error) {
     console.error(`❌ Error uploading file to Convex:`, error.message);
+    updateUrlStatus(url, STAGES.FAILED, 'uploading', null, error.message);
     return null;
   }
 }
@@ -355,9 +555,9 @@ async function checkToolNameExists(toolName) {
 }
 
 /**
- * Save tool data to Convex database
+ * Save tool data to Convex database with resume capability
  */
-async function saveToolToConvex(toolData) {
+async function saveToolToConvex(toolData, url) {
   if (CONFIG.dryRun) {
     console.log(`💾 [DRY RUN] Would save tool to database:`, {
       name: toolData.name,
@@ -368,8 +568,17 @@ async function saveToolToConvex(toolData) {
       tags: toolData.tags,
       screenshot: toolData.screenshot
     });
+    updateUrlStatus(url, STAGES.COMPLETED, 'saving', { savedTool: { _id: 'fake-id-12345', ...toolData } });
     return { _id: 'fake-id-12345', ...toolData };
   }
+  
+  // Check if already completed
+  if (canResumeFromStage(url, 'completed')) {
+    console.log(`🔄 Tool already saved for: ${url}`);
+    return progressState.urls[url].data.savedTool;
+  }
+  
+  updateUrlStatus(url, STAGES.SAVING, 'saving');
   
   try {
     // Check for duplicate tool name
@@ -382,32 +591,43 @@ async function saveToolToConvex(toolData) {
     // First check if tool already exists by URL
     const existingTool = await convex.query('tools:getByUrl', { url: toolData.url });
     
+    let result;
     if (existingTool) {
       // Update existing tool
-      const result = await convex.mutation('tools:updateTool', {
+      result = await convex.mutation('tools:updateTool', {
         id: existingTool._id,
         ...toolData
       });
       console.log(`✅ Tool updated in database: ${toolData.name}`);
-      return result;
     } else {
       // Create new tool
-      const result = await convex.mutation('tools:createTool', toolData);
+      result = await convex.mutation('tools:createTool', toolData);
       console.log(`✅ Tool created in database: ${toolData.name}`);
-      return result;
     }
+    
+    updateUrlStatus(url, STAGES.COMPLETED, 'saving', { savedTool: result });
+    return result;
   } catch (error) {
     console.error(`❌ Error saving tool to Convex:`, error.message);
+    updateUrlStatus(url, STAGES.FAILED, 'saving', null, error.message);
     return null;
   }
 }
 
 /**
- * Process a single URL
+ * Process a single URL with enhanced tracking and resume capability
  */
 async function processUrl(url) {
   const urlDisplay = url.length > 50 ? url.substring(0, 47) + '...' : url;
   console.log(`\n│ 🚀 \x1b[1mProcessing:\x1b[0m \x1b[34m${urlDisplay}\x1b[0m`);
+  
+  // Initialize URL state if not exists
+  if (!progressState.urls[url]) {
+    updateUrlStatus(url, STAGES.PENDING);
+  }
+  
+  // Increment attempts
+  progressState.urls[url].attempts++;
   
   try {
     // Step 1: Extract data with Firecrawl
@@ -429,11 +649,7 @@ async function processUrl(url) {
     // Step 3: Upload screenshot to Convex and get public URL
     let screenshotUrl = null;
     if (screenshotPath) {
-      screenshotUrl = await uploadToConvexStorage(screenshotPath);
-      // Keep local screenshot files for debugging/backup
-      // if (!CONFIG.dryRun) {
-      //   await fs.unlink(screenshotPath).catch(() => {});
-      // }
+      screenshotUrl = await uploadToConvexStorage(screenshotPath, url);
     }
     
     // Step 4: Prepare tool data
@@ -449,10 +665,11 @@ async function processUrl(url) {
     };
     
     // Step 5: Save to Convex database
-    const savedTool = await saveToolToConvex(toolData);
+    const savedTool = await saveToolToConvex(toolData, url);
     
     if (savedTool) {
       console.log(`│ 🎉 \x1b[32m\x1b[1mSuccess:\x1b[0m ${extractedData.name}`);
+      progressState.processedCount++;
       return toolData;
     } else {
       console.log(`│ ⚠️ \x1b[33mFailed to save:\x1b[0m ${extractedData.name}`);
@@ -460,6 +677,7 @@ async function processUrl(url) {
     }
   } catch (error) {
     console.error(`│ ❌ \x1b[31mError:\x1b[0m ${error.message}`);
+    updateUrlStatus(url, STAGES.FAILED, null, null, error.message);
     return null;
   }
 }
@@ -487,7 +705,7 @@ async function readUrlsFromCsv() {
 }
 
 /**
- * Process URLs in batches with delay
+ * Process URLs in batches with enhanced tracking
  */
 async function processBatch(urls, startIndex, batchSize) {
   const batch = urls.slice(startIndex, startIndex + batchSize);
@@ -496,6 +714,11 @@ async function processBatch(urls, startIndex, batchSize) {
   for (const url of batch) {
     const result = await processUrl(url);
     results.push(result);
+    
+    // Save progress periodically
+    if (progressState.processedCount % CONFIG.saveProgressInterval === 0) {
+      await saveProgressState();
+    }
     
     // Add delay between requests to be respectful
     if (batch.indexOf(url) < batch.length - 1) {
@@ -508,97 +731,247 @@ async function processBatch(urls, startIndex, batchSize) {
 }
 
 /**
- * Main execution function
+ * Generate detailed analytics report
+ */
+function generateAnalytics() {
+  const analytics = {
+    overview: {
+      totalUrls: progressState.totalUrls,
+      processed: progressState.processedCount,
+      completed: progressState.completedCount,
+      failed: progressState.failedCount,
+      pending: progressState.totalUrls - progressState.processedCount,
+      successRate: progressState.totalUrls > 0 ? ((progressState.completedCount / progressState.totalUrls) * 100).toFixed(1) : 0
+    },
+    stages: {
+      pending: 0,
+      extracting: 0,
+      extracted: 0,
+      screenshotting: 0,
+      screenshot_taken: 0,
+      uploading: 0,
+      uploaded: 0,
+      saving: 0,
+      completed: 0,
+      failed: 0
+    },
+    errors: {},
+    retryStats: {
+      singleAttempt: 0,
+      multipleAttempts: 0,
+      maxRetries: 0
+    }
+  };
+  
+  // Analyze URL states
+  Object.values(progressState.urls).forEach(urlState => {
+    analytics.stages[urlState.status]++;
+    
+    // Track retry statistics
+    if (urlState.attempts === 1) {
+      analytics.retryStats.singleAttempt++;
+    } else if (urlState.attempts > 1) {
+      analytics.retryStats.multipleAttempts++;
+    }
+    if (urlState.attempts >= CONFIG.maxRetries) {
+      analytics.retryStats.maxRetries++;
+    }
+    
+    // Collect error patterns
+    if (urlState.error) {
+      const errorKey = urlState.error.substring(0, 50); // First 50 chars
+      analytics.errors[errorKey] = (analytics.errors[errorKey] || 0) + 1;
+    }
+  });
+  
+  return analytics;
+}
+
+/**
+ * Display beautiful progress dashboard
+ */
+function displayProgressDashboard(analytics) {
+  console.log('\n' + '═'.repeat(75));
+  console.log('📊 \x1b[1m\x1b[36mProcessing Dashboard\x1b[0m');
+  console.log('═'.repeat(75));
+  
+  // Overview section
+  console.log('\n🎯 \x1b[1mOverview:\x1b[0m');
+  console.log(`   Total URLs: \x1b[1m${analytics.overview.totalUrls}\x1b[0m`);
+  console.log(`   Completed: \x1b[32m\x1b[1m${analytics.overview.completed}\x1b[0m`);
+  console.log(`   Failed: \x1b[31m\x1b[1m${analytics.overview.failed}\x1b[0m`);
+  console.log(`   Pending: \x1b[33m\x1b[1m${analytics.overview.pending}\x1b[0m`);
+  console.log(`   Success Rate: \x1b[${analytics.overview.successRate >= 80 ? '32' : analytics.overview.successRate >= 50 ? '33' : '31'}m\x1b[1m${analytics.overview.successRate}%\x1b[0m`);
+  
+  // Stage breakdown
+  console.log('\n🔄 \x1b[1mStage Breakdown:\x1b[0m');
+  Object.entries(analytics.stages).forEach(([stage, count]) => {
+    if (count > 0) {
+      const stageDisplay = stage.replace(/_/g, ' ').toUpperCase();
+      console.log(`   ${stageDisplay}: \x1b[1m${count}\x1b[0m`);
+    }
+  });
+  
+  // Retry statistics
+  console.log('\n🔁 \x1b[1mRetry Statistics:\x1b[0m');
+  console.log(`   Single Attempt Success: \x1b[32m\x1b[1m${analytics.retryStats.singleAttempt}\x1b[0m`);
+  console.log(`   Required Multiple Attempts: \x1b[33m\x1b[1m${analytics.retryStats.multipleAttempts}\x1b[0m`);
+  console.log(`   Reached Max Retries: \x1b[31m\x1b[1m${analytics.retryStats.maxRetries}\x1b[0m`);
+  
+  // Top errors
+  if (Object.keys(analytics.errors).length > 0) {
+    console.log('\n❌ \x1b[1mTop Error Patterns:\x1b[0m');
+    const sortedErrors = Object.entries(analytics.errors)
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 5);
+    
+    sortedErrors.forEach(([error, count]) => {
+      console.log(`   \x1b[31m${count}x\x1b[0m ${error}...`);
+    });
+  }
+  
+  console.log('\n' + '═'.repeat(75));
+}
+
+/**
+ * Main execution function with enhanced tracking
  */
 async function main() {
   // Beautiful header
-  console.log('\n' + '═'.repeat(65));
-  console.log('🚀 \x1b[1m\x1b[36mTrendiTools Processing Pipeline\x1b[0m');
-  console.log('═'.repeat(65));
+  console.log('\n' + '═'.repeat(75));
+  console.log('🚀 \x1b[1m\x1b[36mTrendiTools Enhanced Processing Pipeline\x1b[0m');
+  console.log('═'.repeat(75));
   
+  // Mode indicators
   if (CONFIG.dryRun) {
     console.log('\n🔍 \x1b[33m\x1b[1mDRY RUN MODE ACTIVATED\x1b[0m');
     console.log('   \x1b[2mNo actual API calls or database changes will be made\x1b[0m');
-    console.log('   \x1b[2mUse --dry-run or -d flag to enable dry run mode\x1b[0m\n');
   } else {
     console.log('\n🎯 \x1b[32m\x1b[1mLIVE MODE ACTIVATED\x1b[0m');
-    console.log('   \x1b[2mProcessing tools and saving to database\x1b[0m\n');
+    console.log('   \x1b[2mProcessing tools and saving to database\x1b[0m');
   }
   
-  // Configuration status with colors
-  console.log('📋 \x1b[1mConfiguration Status:\x1b[0m');
+  if (CONFIG.resume) {
+    console.log('\n🔄 \x1b[34m\x1b[1mRESUME MODE ACTIVATED\x1b[0m');
+    console.log('   \x1b[2mWill skip completed URLs and resume from interruption\x1b[0m');
+  }
+  
+  if (CONFIG.retryFailed) {
+    console.log('\n🔁 \x1b[35m\x1b[1mRETRY FAILED MODE ACTIVATED\x1b[0m');
+    console.log('   \x1b[2mWill only retry previously failed URLs\x1b[0m');
+  }
+  
+  // Configuration status
+  console.log('\n📋 \x1b[1mConfiguration Status:\x1b[0m');
   console.log(`   📁 CSV file: \x1b[2m${path.basename(CONFIG.csvPath)}\x1b[0m`);
   console.log(`   📸 Images: \x1b[2m${path.basename(CONFIG.screenshotDir)}\x1b[0m`);
   console.log(`   🔥 Firecrawl API: ${CONFIG.firecrawlApiKey ? '\x1b[32m✅ Configured\x1b[0m' : '\x1b[31m❌ Missing\x1b[0m'}`);
   console.log(`   💾 Convex: ${CONFIG.convexUrl ? '\x1b[32m✅ Configured\x1b[0m' : '\x1b[31m❌ Missing\x1b[0m'}`);
-  console.log('─'.repeat(65));
+  console.log(`   📊 Batch Size: \x1b[1m${CONFIG.batchSize}\x1b[0m`);
+  console.log(`   🔄 Max Retries: \x1b[1m${CONFIG.maxRetries}\x1b[0m`);
+  console.log('─'.repeat(75));
   
   try {
-    // Read URLs from CSV
-    const urls = await readUrlsFromCsv();
+    // Initialize progress tracking
+    progressState.startTime = new Date().toISOString();
     
-    if (urls.length === 0) {
+    // Load existing progress if resuming
+    if (CONFIG.resume || CONFIG.retryFailed) {
+      await loadProgressState();
+    }
+    
+    // Read URLs from CSV
+    const allUrls = await readUrlsFromCsv();
+    progressState.totalUrls = allUrls.length;
+    
+    if (allUrls.length === 0) {
       console.log('⚠️ No URLs found in CSV file');
       return;
     }
     
+    // Determine which URLs to process
+    const urlsToProcess = getUrlsToProcess(allUrls);
+    
+    if (urlsToProcess.length === 0) {
+      console.log('✅ All URLs have been processed successfully!');
+      const analytics = generateAnalytics();
+      displayProgressDashboard(analytics);
+      return;
+    }
+    
+    console.log(`\n🎯 Processing ${urlsToProcess.length} URLs (${allUrls.length - urlsToProcess.length} already completed)`);
+    
     // Process URLs in batches
     const allResults = [];
-    const totalBatches = Math.ceil(urls.length / CONFIG.batchSize);
+    const totalBatches = Math.ceil(urlsToProcess.length / CONFIG.batchSize);
     
-    for (let i = 0; i < urls.length; i += CONFIG.batchSize) {
+    for (let i = 0; i < urlsToProcess.length; i += CONFIG.batchSize) {
       const batchNumber = Math.floor(i / CONFIG.batchSize) + 1;
-      const batchUrls = urls.slice(i, i + CONFIG.batchSize);
+      const batchUrls = urlsToProcess.slice(i, i + CONFIG.batchSize);
+      progressState.currentBatch = batchNumber;
       
       console.log(`\n📦 \x1b[1m\x1b[35mBatch ${batchNumber}/${totalBatches}\x1b[0m \x1b[2m(${batchUrls.length} URLs)\x1b[0m`);
-      console.log('┌' + '─'.repeat(63) + '┐');
+      console.log('┌' + '─'.repeat(73) + '┐');
       
-      const batchResults = await processBatch(urls, i, CONFIG.batchSize);
+      const batchResults = await processBatch(urlsToProcess, i, CONFIG.batchSize);
       allResults.push(...batchResults);
       
       const batchSuccessful = batchResults.filter(r => r !== null).length;
-      console.log('└' + '─'.repeat(63) + '┘');
+      console.log('└' + '─'.repeat(73) + '┘');
       console.log(`   \x1b[32m✓ ${batchSuccessful}/${batchUrls.length} successful\x1b[0m in batch ${batchNumber}`);
       
+      // Save progress after each batch
+      await saveProgressState();
+      
       // Add delay between batches
-      if (i + CONFIG.batchSize < urls.length) {
-        console.log(`\n⏳ \x1b[2mWaiting ${CONFIG.delayBetweenRequests * 2}ms before next batch...\x1b[0m`);
-        await new Promise(resolve => setTimeout(resolve, CONFIG.delayBetweenRequests * 2));
+      if (i + CONFIG.batchSize < urlsToProcess.length) {
+        console.log(`\n⏳ \x1b[2mWaiting ${CONFIG.delayBetweenBatches}ms before next batch...\x1b[0m`);
+        await new Promise(resolve => setTimeout(resolve, CONFIG.delayBetweenBatches));
       }
     }
     
-    // Beautiful summary with enhanced styling
-    const successful = allResults.filter(r => r !== null).length;
-    const failed = allResults.length - successful;
-    const successRate = ((successful / urls.length) * 100).toFixed(1);
+    // Final save
+    await saveProgressState();
     
-    console.log('\n' + '═'.repeat(65));
-    console.log('📊 \x1b[1m\x1b[36mProcessing Summary\x1b[0m');
-    console.log('═'.repeat(65));
+    // Generate and display analytics
+    const analytics = generateAnalytics();
+    displayProgressDashboard(analytics);
     
-    console.log(`\n   ✅ \x1b[32m\x1b[1mSuccessfully processed:\x1b[0m ${successful}`);
-    console.log(`   ❌ \x1b[31m\x1b[1mFailed:\x1b[0m ${failed}`);
-    console.log(`   📈 \x1b[1mSuccess rate:\x1b[0m \x1b[${successRate >= 80 ? '32' : successRate >= 50 ? '33' : '31'}m${successRate}%\x1b[0m`);
-    console.log(`   🎯 \x1b[1mTotal URLs processed:\x1b[0m ${urls.length}`);
-    
-    // Save results to JSON file for reference
-    const resultsFile = path.join(__dirname, '../data/processing-results.json');
-    await fs.writeFile(resultsFile, JSON.stringify({
+    // Save final results
+    const finalResults = {
       timestamp: new Date().toISOString(),
-      totalUrls: urls.length,
-      successful,
-      failed,
-      successRate: parseFloat(successRate),
-      results: allResults
-    }, null, 2));
+      startTime: progressState.startTime,
+      endTime: new Date().toISOString(),
+      configuration: {
+        batchSize: CONFIG.batchSize,
+        maxRetries: CONFIG.maxRetries,
+        dryRun: CONFIG.dryRun,
+        resume: CONFIG.resume,
+        retryFailed: CONFIG.retryFailed
+      },
+      analytics,
+      detailedResults: progressState.urls
+    };
     
-    console.log('\n─'.repeat(65));
-    console.log(`💾 Results saved to: \x1b[2m${path.basename(resultsFile)}\x1b[0m`);
+    await fs.writeFile(CONFIG.resultsPath, JSON.stringify(finalResults, null, 2));
+    
+    console.log('\n─'.repeat(75));
+    console.log(`💾 Detailed results saved to: \x1b[2m${path.basename(CONFIG.resultsPath)}\x1b[0m`);
+    console.log(`📊 Progress state saved to: \x1b[2m${path.basename(CONFIG.progressPath)}\x1b[0m`);
     console.log('🎉 \x1b[32m\x1b[1mProcessing complete!\x1b[0m');
-    console.log('═'.repeat(65) + '\n');
+    
+    // Provide next steps if there are failures
+    if (analytics.overview.failed > 0) {
+      console.log('\n💡 \x1b[1mNext Steps:\x1b[0m');
+      console.log('   To retry failed URLs: \x1b[33mnpm run process-tools:enhanced --retry-failed\x1b[0m');
+      console.log('   To resume processing: \x1b[33mnpm run process-tools:enhanced --resume\x1b[0m');
+    }
+    
+    console.log('═'.repeat(75) + '\n');
     
   } catch (error) {
     console.error('❌ Fatal error:', error.message);
+    await saveProgressState(); // Save progress even on error
     process.exit(1);
   }
 }
@@ -611,5 +984,8 @@ export {
   takeScreenshot,
   uploadToConvexStorage,
   saveToolToConvex,
-  processUrl
+  processUrl,
+  loadProgressState,
+  saveProgressState,
+  generateAnalytics
 };

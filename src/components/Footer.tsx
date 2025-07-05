@@ -49,9 +49,6 @@ export function Footer() {
                 <DropdownMenuItem asChild>
                   <a href="/cookies" className="cursor-pointer">Cookie Policy</a>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <a href="/contact" className="cursor-pointer">Contact Us</a>
-                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             

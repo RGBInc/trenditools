@@ -200,6 +200,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **GitHub**: [Repository Link]
 **Documentation**: [docs/](docs/)
 
+### 📚 Documentation
+
+- [Image System Overview](docs/IMAGE_SYSTEM.md) - Complete image processing and serving system
+- [Image Performance Guide](docs/IMAGE_PERFORMANCE_GUIDE.md) - Performance optimizations for image loading
+- [Deployment Guide](docs/DEPLOYMENT_GUIDE.md) - Production deployment instructions
+- [Security Audit](docs/SECURITY_AUDIT.md) - Security considerations and best practices
+
 ## App authentication
 
 Chef apps use [Convex Auth](https://auth.convex.dev/) with Anonymous auth for easy sign in. You may wish to change this before deploying your app.
