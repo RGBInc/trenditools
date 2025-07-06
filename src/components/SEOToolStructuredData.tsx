@@ -1,5 +1,4 @@
 import React from 'react';
-import { Helmet } from 'react-helmet-async';
 
 interface Tool {
   _id: string;
@@ -65,7 +64,7 @@ export const SEOToolStructuredData: React.FC<SEOToolStructuredDataProps> = ({ to
   const pageDescription = tool.summary || tool.tagline || `Discover ${tool.name}, an innovative AI tool in the ${tool.category} category. View screenshots, features, and more on TrendiTools.`;
 
   return (
-    <Helmet>
+    <>
       {/* Primary Meta Tags */}
       <title>{pageTitle}</title>
       <meta name="title" content={pageTitle} />
@@ -100,7 +99,7 @@ export const SEOToolStructuredData: React.FC<SEOToolStructuredDataProps> = ({ to
       <script type="application/ld+json">
         {JSON.stringify(cleanStructuredData, null, 2)}
       </script>
-    </Helmet>
+    </>
   );
 };
 

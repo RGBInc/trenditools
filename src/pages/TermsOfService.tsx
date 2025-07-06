@@ -1,15 +1,12 @@
 import React from 'react';
-import { Helmet } from 'react-helmet-async';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 
 const TermsOfService: React.FC = () => {
   return (
     <>
-      <Helmet>
-        <title>Terms of Service - TrendiTools</title>
-        <meta name="description" content="Terms of Service for TrendiTools - Read our terms and conditions for using our digital tools discovery platform." />
-      </Helmet>
+      <title>Terms of Service - TrendiTools</title>
+      <meta name="description" content="Terms of Service for TrendiTools - Read our terms and conditions for using our digital tools discovery platform." />
       
       <div className="min-h-screen bg-background text-foreground flex flex-col">
         <Header />

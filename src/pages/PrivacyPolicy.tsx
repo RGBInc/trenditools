@@ -1,15 +1,12 @@
 import React from 'react';
-import { Helmet } from 'react-helmet-async';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 
 const PrivacyPolicy: React.FC = () => {
   return (
     <>
-      <Helmet>
-        <title>Privacy Policy - TrendiTools</title>
-        <meta name="description" content="Privacy Policy for TrendiTools - Learn how we collect, use, and protect your personal information." />
-      </Helmet>
+      <title>Privacy Policy - TrendiTools</title>
+      <meta name="description" content="Privacy Policy for TrendiTools - Learn how we collect, use, and protect your personal information." />
       
       <div className="min-h-screen bg-background text-foreground flex flex-col">
         <Header />
