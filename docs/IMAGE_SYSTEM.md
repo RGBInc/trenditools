@@ -270,7 +270,7 @@ useEffect(() => {
 1. **WebP Format Support**: Smaller file sizes
 2. **Multiple Resolutions**: Responsive image serving
 3. **Automatic Retries**: Handle failed screenshots
-4. **Image Analysis**: AI-powered quality scoring
+4. **Image Analysis**: Automated quality scoring
 5. **CDN Integration**: Global image distribution
 
 ---

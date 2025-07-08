@@ -660,7 +660,8 @@ async function processUrl(url) {
       summary: extractedData.summary,
       descriptor: extractedData.descriptor,
       category: extractedData.category,
-      screenshot: screenshotUrl,
+      // Convert null to undefined for Convex validation
+      screenshot: screenshotUrl || undefined,
       tags: extractedData.tags
     };
     

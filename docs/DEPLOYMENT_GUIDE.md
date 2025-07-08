@@ -47,7 +47,6 @@ npx convex deploy --prod
 ```bash
 # Set production environment variables
 npx convex env set FIRECRAWL_API_KEY fc-your-production-key --prod
-npx convex env set OPENAI_API_KEY sk-your-production-key --prod
 ```
 
 ### 1.3 Get Production URL
@@ -404,7 +403,7 @@ Update `index.html`:
 
 ```html
 <meta name="description" content="Discover and explore the latest trending tools and services">
-<meta name="keywords" content="tools, productivity, AI, trending, discovery">
+<meta name="keywords" content="tools, productivity, trending, discovery">
 <meta property="og:title" content="TrendiTools - Discover Trending Tools">
 <meta property="og:description" content="Explore the latest trending tools and services">
 <meta property="og:url" content="https://your-app.vercel.app">

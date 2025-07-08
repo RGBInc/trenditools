@@ -39,7 +39,7 @@ This document defines the complete schema for tool data in TrendiTools, explaini
 - **Purpose**: Short, catchy description (subtitle)
 - **UI Usage**: Displayed as subtitle on tool cards and pages
 - **Database**: Not indexed for search
-- **Example**: `"AI Research Assistant"`
+- **Example**: `"Research Assistant"`
 
 #### `summary` (string, required)
 - **Purpose**: Detailed description of the tool (500+ words recommended)
@@ -52,7 +52,7 @@ This document defines the complete schema for tool data in TrendiTools, explaini
 - **UI Usage**: Used in search indexes but not displayed to users
 - **Database**: Has dedicated search index (`search_content`)
 - **Format**: Can be a single word or descriptive phrase that captures the tool's essence
-- **Example**: `"AI-powered research assistant for academic papers"`, `"Design collaboration platform"`, `"Productivity automation tool"`
+- **Example**: `"Research assistant for academic papers"`, `"Design collaboration platform"`, `"Productivity automation tool"`
 - **Note**: Should be optimized for search discoverability rather than display
 
 #### `category` (string, optional)
@@ -69,7 +69,7 @@ This document defines the complete schema for tool data in TrendiTools, explaini
 - **Purpose**: Searchable keywords for discovery
 - **UI Usage**: Used in search functionality
 - **Database**: Dedicated search index (`search_tags`)
-- **Example**: `["ai", "research", "academic", "gpt-4"]`
+- **Example**: `["research", "academic", "productivity", "collaboration"]`
 
 #### `screenshot` (string, required)
 - **Purpose**: URL to tool's screenshot/preview image

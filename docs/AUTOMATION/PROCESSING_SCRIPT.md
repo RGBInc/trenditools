@@ -2,18 +2,18 @@
 
 ## Overview
 
-TrendiTools provides a comprehensive processing script (`process-tools.js`) for extracting, enriching, and processing tool data from URLs.
+TrendiTools provides a comprehensive AI-powered processing script (`process-tools.js`) for extracting, enriching, and processing tool data from URLs.
 
-The script is an advanced processing pipeline with robust progress tracking, resume functionality, and granular error recovery - perfect for processing large datasets (1000+ URLs) with confidence.
+The script is an advanced AI processing pipeline with robust progress tracking, resume functionality, and granular error recovery - perfect for processing large datasets (1000+ URLs) with confidence.
 
 ## Features
 
-- 🔍 **AI-Powered Extraction**: Uses Firecrawl AI to analyze website content
+- 🔍 **AI-Powered Extraction**: Uses Firecrawl AI and OpenAI to analyze website content
 - 📸 **Automated Screenshots**: Captures high-quality website screenshots
 - ☁️ **Cloud Integration**: Uploads to Convex storage and database
 - 🎯 **Batch Processing**: Handles multiple URLs with rate limiting
 - 🔄 **Dry Run Mode**: Test without making changes
-- 📊 **Progress Tracking**: Real-time processing feedback
+- 📊 **Progress Tracking**: Real-time AI processing feedback
 
 ## Advanced Script Features
 
@@ -77,7 +77,7 @@ Edit `scripts/process-tools.js` to modify:
 # Required in .env.local
 FIRECRAWL_API_KEY=fc-your-api-key-here
 VITE_CONVEX_URL=https://your-deployment.convex.cloud
-OPENAI_API_KEY=sk-your-openai-key-here  # Optional for enhanced analysis
+OPENAI_API_KEY=sk-your-openai-key-here  # Required for AI analysis
 ```
 
 ### Script Configuration
@@ -149,16 +149,31 @@ CSV File (data/Trendi Tools - Final.csv)
 **Service**: Firecrawl AI
 
 ```javascript
-// Extraction prompt for AI analysis
-const extractionPrompt = `
-Analyze this website and extract:
-1. Tool/service name
-2. Tagline (1-2 sentences)
-3. Summary (max 300 words)
-4. Descriptor (brief 1-2 sentences for search)
-5. Category (broad classification)
-6. Tags (specific use-case keywords)
-`;
+// Extract structured data using AI
+const extractedData = await firecrawl.scrape({
+  url: toolUrl,
+  formats: ['extract'],
+  extract: {
+    schema: {
+      name: 'string',
+      tagline: 'string', 
+      summary: 'string',
+      descriptor: 'string',
+      category: 'string',
+      tags: 'array'
+    }
+  }
+});
+
+// Example AI-extracted data
+{
+  "name": "Figma",
+  "tagline": "Design Tool", 
+  "summary": "Collaborative design platform",
+  "descriptor": "Web-based design tool for teams",
+  "category": "AI",
+  "tags": ["design", "collaboration", "prototyping"]
+}
 ```
 
 **Extracted Fields**:
@@ -423,7 +438,7 @@ DEBUG=true node scripts/process-tools.js
 ```javascript
 // Pre-flight checks
 const validateEnvironment = () => {
-  const required = ['FIRECRAWL_API_KEY', 'VITE_CONVEX_URL'];
+  const required = ['FIRECRAWL_API_KEY', 'OPENAI_API_KEY', 'VITE_CONVEX_URL'];
   const missing = required.filter(key => !process.env[key]);
   
   if (missing.length > 0) {
@@ -484,7 +499,7 @@ rm -f data/processing-results-*.json
 
 1. **"API Key not found"**
    - Check `.env.local` file exists
-   - Verify `FIRECRAWL_API_KEY` is set
+   - Verify `FIRECRAWL_API_KEY` and `OPENAI_API_KEY` are set
    - Ensure no extra spaces in key
 
 2. **"Screenshot timeout"**
@@ -508,7 +523,8 @@ rm -f data/processing-results-*.json
 node scripts/process-tools.js --url="https://example.com" --debug
 
 # Validate environment
-node -e "console.log(process.env.FIRECRAWL_API_KEY ? 'API Key found' : 'API Key missing')"
+node -e "console.log(process.env.FIRECRAWL_API_KEY ? 'Firecrawl API Key found' : 'Firecrawl API Key missing')"
+node -e "console.log(process.env.OPENAI_API_KEY ? 'OpenAI API Key found' : 'OpenAI API Key missing')"
 
 # Check CSV format
 head -5 "data/Trendi Tools - Final.csv"

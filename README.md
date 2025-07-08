@@ -11,9 +11,6 @@ A modern web application for discovering and exploring trending tools and servic
 - 📊 **Real-time Data**: Powered by Convex for real-time updates
 - 🏷️ **Category Filtering**: Browse tools by specific categories
 - 🔖 **Bookmarking**: Save your favorite tools for later
-- 💬 **AI Chat**: Get personalized tool recommendations
-- 📸 **Automated Screenshots**: AI-powered tool processing with screenshots
-- 🤖 **Content Enrichment**: Automated tool data extraction and enhancement
 
 ## 🛠️ Tech Stack
 
@@ -23,8 +20,7 @@ A modern web application for discovering and exploring trending tools and servic
 - **UI Components**: Custom components with shadcn/ui patterns
 - **State Management**: React hooks and Convex queries
 - **Build Tool**: Vite with TypeScript
-- **AI Services**: Firecrawl for content extraction
-- **Automation**: Puppeteer for screenshots
+
 
 ## 🚀 Quick Start
 
@@ -33,7 +29,7 @@ A modern web application for discovering and exploring trending tools and servic
 - Node.js 18 or higher
 - npm or yarn
 - Convex account (free tier available)
-- Firecrawl API key (for processing tools)
+
 
 ### Installation
 
@@ -56,8 +52,7 @@ cp .env.example .env.local
 Edit `.env.local` and add your configuration:
 ```env
 VITE_CONVEX_URL=your-convex-deployment-url
-FIRECRAWL_API_KEY=fc-your-api-key-here
-OPENAI_API_KEY=sk-your-openai-key-here  # Optional
+
 ```
 
 4. **Set up Convex:**
@@ -122,17 +117,7 @@ trenditools/
 └── screenshots/           # Generated screenshots
 ```
 
-## 🤖 Automated Tool Processing
 
-TrendiTools includes a powerful automation system for processing tool URLs:
-
-1. **Add URLs** to `data/Trendi Tools - Final.csv`
-2. **Run processing script**: `npm run process-tools`
-3. **AI extracts** tool information automatically
-4. **Screenshots** are captured and stored
-5. **Data is enriched** and saved to database
-
-See [Processing Script Documentation](docs/PROCESSING_SCRIPT.md) for details.
 
 ## 📚 Documentation
 
@@ -191,8 +176,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Built with [Convex](https://convex.dev) for the backend
 - UI components inspired by [shadcn/ui](https://ui.shadcn.com)
 - Icons from [Lucide](https://lucide.dev)
-- AI-powered content extraction by [Firecrawl](https://firecrawl.dev)
-- Screenshots captured with [Puppeteer](https://pptr.dev)
+
 
 ---
 

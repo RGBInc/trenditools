@@ -69,7 +69,6 @@ TrendiTools/
 ├── convex/                 # Backend (Convex)
 │   ├── schema.ts          # Database schema
 │   ├── tools.ts           # Tool-related functions
-│   ├── chat.ts            # Chat functionality
 │   ├── auth.ts            # Authentication
 │   └── ...
 └── docs/                   # Documentation
@@ -108,7 +107,6 @@ tools: defineTable({
 - `search_tags`: Full-text search on tags
 
 ### Other Tables
-- **chatMessages**: AI chat history with tool recommendations
 - **searches**: User search analytics
 - **userProfiles**: User data and points system
 - **bookmarks**: User-saved tools
@@ -238,7 +236,6 @@ This single command starts:
 convex/
 ├── schema.ts          # Database schema definition
 ├── tools.ts           # Tool queries and mutations
-├── chat.ts            # AI chat functionality
 ├── auth.ts            # Authentication setup
 ├── users.ts           # User management
 ├── http.ts            # HTTP routes
@@ -266,17 +263,14 @@ const tools = useQuery(api.tools.searchTools, {
 - `getToolById`: Get specific tool details
 - `getFeaturedTools`: Get featured tools
 - `getUserBookmarks`: Get user's saved tools
-- `getChatHistory`: Get chat message history
 
 ### Mutations (Write Operations)
 - `addBookmark`: Save tool to user's bookmarks
 - `removeBookmark`: Remove tool from bookmarks
 - `updateUserProfile`: Update user profile data
-- `sendChatMessage`: Send message and get AI response
 
 ### Actions (External API Calls)
-- `generateChatResponse`: Call OpenAI API for chat responses
-- `analyzeToolContent`: Process tool data with AI
+- `processToolData`: Process and validate tool information
 
 ## Best Practices
 

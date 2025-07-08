@@ -4,13 +4,13 @@ import { UserButton } from "./UserButton";
 import { ThemeToggle } from "./ThemeToggle";
 import { SignInForm } from "../SignInForm";
 import { Doc } from "../../convex/_generated/dataModel";
-import { Search, Bot, Wrench, Bookmark as BookmarkIcon } from "lucide-react";
+import { Search, Wrench, Bookmark as BookmarkIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
 interface HeaderProps {
-  mode?: 'search' | 'ai' | 'saved';
-  onModeChange?: (mode: 'search' | 'ai' | 'saved') => void;
+  mode?: 'search' | 'saved';
+  onModeChange?: (mode: 'search' | 'saved') => void;
   onShowProfile?: () => void;
 }
 
@@ -54,17 +54,7 @@ export function Header({ mode = 'search', onModeChange, onShowProfile }: HeaderP
                 <Search className="w-4 h-4" />
                 <span>Search</span>
               </button>
-              <button
-                onClick={() => onModeChange('ai')}
-                className={`flex items-center space-x-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                  mode === 'ai'
-                    ? 'bg-background text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <Bot className="w-4 h-4" />
-                <span>Assistant</span>
-              </button>
+
               <button
                 onClick={() => onModeChange('saved')}
                 className={`flex items-center space-x-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
@@ -93,17 +83,7 @@ export function Header({ mode = 'search', onModeChange, onShowProfile }: HeaderP
                 <Search className="w-4 h-4" />
                 <span className="hidden sm:inline">Search</span>
               </button>
-              <button
-                onClick={() => onModeChange('ai')}
-                className={`flex items-center space-x-1 px-2 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                  mode === 'ai'
-                    ? 'bg-background text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <Bot className="w-4 h-4" />
-                <span className="hidden sm:inline">Assistant</span>
-              </button>
+
               <button
                 onClick={() => onModeChange('saved')}
                 className={`flex items-center space-x-1 px-2 py-1.5 rounded-md text-sm font-medium transition-colors ${

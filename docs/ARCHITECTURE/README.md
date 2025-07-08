@@ -63,7 +63,7 @@ This section contains technical documentation about TrendiTools' system design, 
 ```
 CSV Data → Processing Scripts → Convex Database → React Frontend
     ↓              ↓                ↓              ↓
-Tool URLs → AI Extraction → Real-time DB → User Interface
+Tool URLs → Data Processing → Real-time DB → User Interface
     ↓              ↓                ↓              ↓
 Screenshots → Cloud Storage → Image URLs → Optimized Display
 ```

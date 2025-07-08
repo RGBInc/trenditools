@@ -10,7 +10,7 @@ TrendiTools is a modern web application for discovering and managing digital too
 - **Frontend**: React 18 + TypeScript + Tailwind CSS + Framer Motion
 - **Backend**: Convex (real-time database + serverless functions)
 - **Authentication**: Convex Auth with email/password and anonymous options
-- **AI**: OpenAI GPT-4 integration for tool recommendations
+
 - **Deployment**: Convex hosting with Vite development server
 
 ## 🏗️ Architecture Overview
@@ -38,7 +38,7 @@ convex/
 ├── schema.ts            # Database schema
 ├── tools.ts             # Tool-related functions
 ├── users.ts             # User-related functions
-├── chat.ts              # AI chat functions
+
 └── router.ts            # Custom HTTP routes
 ```
 
@@ -118,11 +118,7 @@ npm run dev
 - **Debounced input** to prevent excessive API calls
 - **Pagination** using Convex's paginated queries
 
-### AI Integration
-- **OpenAI GPT-4** for tool recommendations
-- **Context management** for conversation flow
-- **Tool matching** based on user queries
-- **Session-based chat history**
+
 
 ### Bookmark System
 - **User-specific bookmarks** linked to user ID
@@ -165,13 +161,7 @@ bookmarks: {
   toolId: Id<"tools">,
 }
 
-// Chat history
-chatHistory: {
-  sessionId: string,
-  message: string,
-  response: string,
-  recommendedTools?: Doc<"tools">[],
-}
+
 ```
 
 ### Index Strategy
@@ -197,11 +187,7 @@ export const sendMessage = action({
 });
 ```
 
-### Tool Matching Algorithm
-- **Keyword extraction** from user queries
-- **Semantic matching** using tool descriptions
-- **Category-based filtering** for relevant results
-- **Ranking algorithm** for best matches
+
 
 ## 🎯 Common Development Tasks
 
@@ -227,12 +213,7 @@ export const sendMessage = action({
 3. **Update category filters** in UI
 4. **Test category-based searches**
 
-### Integrating New AI Features
-1. **Extend chat functions** in `convex/chat.ts`
-2. **Update AI prompts** for better responses
-3. **Modify tool matching logic** if needed
-4. **Update chat UI** for new features
-5. **Test AI responses** thoroughly
+
 
 ## 🐛 Debugging & Troubleshooting
 
@@ -241,7 +222,7 @@ export const sendMessage = action({
 2. **Authentication issues** - Verify user context in functions
 3. **Search not working** - Check search indexes in schema
 4. **Real-time updates failing** - Verify Convex query usage
-5. **AI responses empty** - Check OpenAI API key and prompts
+
 
 ### Debugging Tools
 - **Convex Dashboard** - Monitor database and function calls
@@ -253,7 +234,7 @@ export const sendMessage = action({
 - **Query performance** - Monitor slow database queries
 - **Bundle size** - Keep JavaScript bundles optimized
 - **Image optimization** - Ensure images are properly sized
-- **API rate limits** - Monitor OpenAI usage
+
 
 ## 📦 Dependencies & Updates
 
@@ -264,7 +245,7 @@ export const sendMessage = action({
   "react": "^18.0.0",           // Frontend framework
   "framer-motion": "^10.0.0",   // Animations
   "tailwindcss": "^3.0.0",     // Styling
-  "openai": "^4.0.0",          // AI integration
+
   "sonner": "^1.0.0"           // Toast notifications
 }
 ```
@@ -284,10 +265,7 @@ export const sendMessage = action({
 CONVEX_URL=your-convex-deployment-url
 VITE_CONVEX_URL=your-convex-deployment-url
 
-# Required for AI features
-OPENAI_API_KEY=your-openai-api-key
-CONVEX_OPENAI_API_KEY=your-openai-api-key
-CONVEX_OPENAI_BASE_URL=your-openai-base-url
+
 ```
 
 ### Production Checklist
@@ -297,7 +275,7 @@ CONVEX_OPENAI_BASE_URL=your-openai-base-url
 - [ ] Frontend built and deployed
 - [ ] Authentication working
 - [ ] Search functionality working
-- [ ] AI features working
+
 - [ ] File uploads working
 - [ ] Error handling tested
 
@@ -358,7 +336,7 @@ CONVEX_OPENAI_BASE_URL=your-openai-base-url
 ### Performance Metrics
 - **Page load time** - < 3 seconds
 - **Search response time** - < 500ms
-- **AI response time** - < 5 seconds
+
 - **Mobile performance** - Lighthouse score > 90
 
 ### User Experience Metrics

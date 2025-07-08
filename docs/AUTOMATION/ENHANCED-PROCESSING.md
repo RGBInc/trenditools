@@ -12,7 +12,7 @@ A robust, resumable tool processing pipeline with granular progress tracking and
 
 ### 🔄 **Processing Stages**
 Each URL goes through these tracked stages:
-1. **Extracting** - AI data extraction with Firecrawl
+1. **Extracting** - Data extraction with Firecrawl
 2. **Extracted** - Data extraction completed
 3. **Screenshotting** - Screenshot capture in progress
 4. **Screenshot Taken** - Screenshot captured successfully
@@ -41,7 +41,6 @@ cp .env.example .env.local
 # FIRECRAWL_API_KEY=your_firecrawl_api_key_here
 # VITE_CONVEX_URL=your_convex_url_here
 # CONVEX_TOKEN=your_convex_token_here
-# OPENAI_API_KEY=your_openai_api_key_here
 ```
 
 ### 2. Prepare Your Data

@@ -63,39 +63,27 @@ export const searchTools = query({
           .paginate(args.paginationOpts);
       }
     } else {
-      // Search by name first
+      // Search by name first (broad search, not constrained by category)
       const nameResults = await ctx.db
         .query("tools")
         .withSearchIndex("search_tools", (q) => {
-          let search = q.search("name", args.query);
-          if (args.category) {
-            search = search.eq("category", args.category);
-          }
-          return search;
+          return q.search("name", args.query);
         })
         .take(20);
 
-      // Search by descriptor/content
+      // Search by descriptor/content (broad search, not constrained by category)
       const contentResults = await ctx.db
         .query("tools")
         .withSearchIndex("search_content", (q) => {
-          let search = q.search("descriptor", args.query);
-          if (args.category) {
-            search = search.eq("category", args.category);
-          }
-          return search;
+          return q.search("descriptor", args.query);
         })
         .take(20);
 
-      // Search by tags
+      // Search by tags (broad search, not constrained by category)
       const tagResults = await ctx.db
         .query("tools")
         .withSearchIndex("search_tags", (q) => {
-          let search = q.search("tags", args.query);
-          if (args.category) {
-            search = search.eq("category", args.category);
-          }
-          return search;
+          return q.search("tags", args.query);
         })
         .take(20);
 

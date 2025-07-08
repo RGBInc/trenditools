@@ -105,12 +105,12 @@ export function ProfilePage({ onViewToolPage, onBack }: ProfilePageProps) {
   }
 
   return (
-    <div ref={containerRef} className="min-h-screen px-4 sm:px-6 lg:px-8 py-6">
+    <div ref={containerRef} className="min-h-screen">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="max-w-7xl mx-auto space-y-6"
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6"
       >
 
 

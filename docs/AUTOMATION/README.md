@@ -1,13 +1,13 @@
 # 🤖 Automation
 
-This section covers TrendiTools' data processing and automation capabilities, including AI-powered tool extraction and batch processing systems.
+This section covers TrendiTools' data processing and automation capabilities, including automated tool extraction and batch processing systems.
 
 ## 📚 Documentation in This Section
 
 ### [Processing Script Documentation](PROCESSING_SCRIPT.md)
 **Main processing script for tool data extraction**
 - Comprehensive processing pipeline
-- AI-powered extraction with Firecrawl
+- Automated extraction with Firecrawl
 - Automated screenshot capture
 - Cloud integration and storage
 - Progress tracking and resume functionality
@@ -27,17 +27,17 @@ This section covers TrendiTools' data processing and automation capabilities, in
 ### Core Processing Pipeline
 
 ```
-CSV Input → AI Extraction → Screenshot Capture → Cloud Upload → Database Save
+CSV Input → Data Extraction → Screenshot Capture → Cloud Upload → Database Save
     ↓            ↓              ↓                ↓            ↓
 Tool URLs → Tool Metadata → Visual Previews → File Storage → Searchable Data
 ```
 
 ### Key Features
 
-#### 🔍 **AI-Powered Extraction**
-- Uses Firecrawl AI to analyze website content
+#### 🔍 **Automated Extraction**
+- Uses Firecrawl to analyze website content
 - Extracts tool names, descriptions, categories, and tags
-- Intelligent content summarization
+- Content summarization
 - Automatic categorization
 
 #### 📸 **Automated Screenshots**
@@ -65,7 +65,6 @@ Tool URLs → Tool Metadata → Visual Previews → File Storage → Searchable 
 # Required environment variables
 FIRECRAWL_API_KEY=your_api_key
 VITE_CONVEX_URL=your_convex_url
-OPENAI_API_KEY=your_openai_key  # Optional
 ```
 
 ### 2. Basic Usage
@@ -93,7 +92,7 @@ npm run process-tools:retry
 Each tool goes through these tracked stages:
 
 1. **Pending** - Initial state
-2. **Extracting** - AI data extraction in progress
+2. **Extracting** - Data extraction in progress
 3. **Extracted** - Data extraction completed
 4. **Screenshot** - Screenshot capture in progress
 5. **Screenshot Done** - Screenshot captured
@@ -126,7 +125,7 @@ Each tool goes through these tracked stages:
 
 ### For Data Managers
 1. **Large Dataset Processing**: Handle 1000+ URLs efficiently
-2. **Data Quality**: AI-powered extraction ensures consistency
+2. **Data Quality**: Automated extraction ensures consistency
 3. **Progress Tracking**: Monitor processing status in real-time
 4. **Error Recovery**: Handle failures gracefully
 

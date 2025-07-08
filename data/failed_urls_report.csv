@@ -1,0 +1,9 @@
+URL,Error Message,Attempts
+https://www.canonic.dev,"Extraction job failed: All provided URLs are invalid",5
+https://www.lumina-chat.com,"Extraction job failed: All provided URLs are invalid",5
+https://www.mystic.ai/,"Extraction job failed: All provided URLs are invalid",5
+https://noisee.ai,"Extraction job failed: All provided URLs are invalid",5
+https://pinokio.computer,"Extraction job failed: All provided URLs are invalid",5
+https://www.sonero.ai,"Extraction job failed: All provided URLs are invalid",5
+https://grok.x.ai,"Firecrawl API error: 403 Forbidden",5
+https://www.petals.dev/,"Navigation timeout of 30000 ms exceeded",1

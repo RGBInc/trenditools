@@ -24,8 +24,8 @@ const CookieConsent: React.FC<CookieConsentProps> = ({ onAccept }) => {
     // Check if user has already made a choice
     const consentGiven = localStorage.getItem('cookie-consent');
     if (!consentGiven) {
-      // Show banner after a short delay
-      const timer = setTimeout(() => setIsVisible(true), 1000);
+      // Show banner after legal maximum delay (30 seconds)
+      const timer = setTimeout(() => setIsVisible(true), 30000);
       return () => clearTimeout(timer);
     }
   }, []);

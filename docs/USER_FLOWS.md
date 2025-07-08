@@ -44,7 +44,6 @@ Landing Page → Sign Up/In Decision → Authentication → Welcome Experience
 3. **First Experience**
    - Brief onboarding tour (optional)
    - Suggested searches or categories
-   - Introduction to AI assistant
 
 #### 1.2 Initial Tool Discovery
 ```
@@ -97,48 +96,9 @@ Category Selection → Filtered Results → Tool Exploration → Collection Buil
 3. User can combine with text search for refined results
 4. Builds collection through bookmarking
 
-### 3. AI-Assisted Discovery Flow
+### 3. Bookmark Management Flow
 
-#### 3.1 AI Chat Interaction
-```
-AI Mode → Query Input → AI Response → Tool Recommendations → Follow-up
-```
-
-**Detailed Flow:**
-1. **AI Mode Activation**
-   - User switches to AI Assistant mode via header toggle
-   - Sees welcome message and suggested queries
-   - Clean chat interface with input field
-
-2. **Conversation Initiation**
-   - User types natural language query about tool needs
-   - AI processes request and provides contextual response
-   - Specific tool recommendations appear below response
-
-3. **Tool Exploration**
-   - Recommended tools displayed as interactive cards
-   - User can bookmark, visit, or ask follow-up questions
-   - AI maintains conversation context
-
-4. **Iterative Refinement**
-   - User asks follow-up questions
-   - AI refines recommendations based on feedback
-   - Conversation history maintained during session
-
-#### 3.2 Suggested Query Flow
-```
-AI Welcome → Suggested Query → Instant Response → Tool Discovery
-```
-
-**Detailed Flow:**
-1. User sees pre-written suggested queries
-2. Clicks on suggestion to auto-populate input
-3. AI immediately responds with relevant tools
-4. User explores recommendations
-
-### 4. Bookmark Management Flow
-
-#### 4.1 Bookmarking Tools
+#### 3.1 Bookmarking Tools
 ```
 Tool Discovery → Bookmark Action → Confirmation → Collection Building
 ```
@@ -149,7 +109,7 @@ Tool Discovery → Bookmark Action → Confirmation → Collection Building
 3. Visual feedback confirms bookmark saved
 4. Tool appears in bookmarks collection
 
-#### 4.2 Managing Bookmarks
+#### 3.2 Managing Bookmarks
 ```
 Bookmarks Panel → View Collection → Organize → Remove/Visit
 ```
@@ -169,9 +129,9 @@ Bookmarks Panel → View Collection → Organize → Remove/Visit
    - Visit websites directly from bookmarks
    - Share bookmarked tools with others
 
-### 5. Profile Management Flow
+### 4. Profile Management Flow
 
-#### 5.1 Profile Setup/Update
+#### 4.1 Profile Setup/Update
 ```
 Profile Access → Edit Mode → Information Update → Image Upload → Save
 ```
@@ -197,7 +157,7 @@ Profile Access → Edit Mode → Information Update → Image Upload → Save
    - Success notification confirms update
    - Profile immediately reflects changes
 
-#### 5.2 Profile Overview
+#### 4.2 Profile Overview
 ```
 Profile Page → View Stats → Manage Bookmarks → Account Settings → Password Management
 ```
@@ -209,7 +169,7 @@ Profile Page → View Stats → Manage Bookmarks → Account Settings → Passwo
 4. Account management options
 5. Password change functionality (for non-anonymous users)
 
-#### 5.3 Password Management Flow
+#### 4.3 Password Management Flow
 ```
 Profile Page → Account Settings → Change Password → Enter Credentials → Update Password
 ```
@@ -233,30 +193,7 @@ Profile Page → Account Settings → Change Password → Enter Credentials → 
 
 ## 🔄 Cross-Feature Flows
 
-### 6. Search to AI Flow
-```
-Search Results → Unsatisfied → Switch to AI → Natural Query → Better Results
-```
-
-**Detailed Flow:**
-1. User performs traditional search
-2. Results don't meet expectations
-3. Switches to AI mode via header toggle
-4. Describes needs in natural language
-5. Receives more targeted recommendations
-
-### 7. AI to Search Flow
-```
-AI Recommendation → Want More Options → Switch to Search → Explore Category
-```
-
-**Detailed Flow:**
-1. AI provides specific tool recommendations
-2. User wants to explore more options in same category
-3. Switches to search mode
-4. Uses category filter to see all tools in category
-
-### 8. Discovery to Sharing Flow
+### 5. Discovery to Sharing Flow
 ```
 Tool Discovery → Bookmark → Profile View → Share Tool → Earn Points
 ```
@@ -270,7 +207,7 @@ Tool Discovery → Bookmark → Profile View → Share Tool → Earn Points
 
 ## 📱 Mobile-Specific Flows
 
-### 9. Mobile Navigation Flow
+### 6. Mobile Navigation Flow
 ```
 Mobile Landing → Hamburger Menu → Feature Access → Touch Interactions
 ```
@@ -286,26 +223,23 @@ Mobile Landing → Hamburger Menu → Feature Access → Touch Interactions
    - Voice search capability (future feature)
    - Simplified filter options
 
-3. **AI Chat on Mobile**
-   - Optimized chat interface for mobile
-   - Keyboard-aware layout adjustments
-   - Easy switching between modes
+
 
 ## 🚫 Error & Edge Case Flows
 
-### 10. Error Recovery Flows
+### 7. Error Recovery Flows
 
-#### 10.1 Network Error Flow
+#### 7.1 Network Error Flow
 ```
 Action Attempt → Network Failure → Error Message → Retry Option → Success
 ```
 
-#### 10.2 Authentication Error Flow
+#### 7.2 Authentication Error Flow
 ```
 Session Expiry → Login Prompt → Re-authentication → Return to Previous State
 ```
 
-#### 10.3 Search No Results Flow
+#### 7.3 Search No Results Flow
 ```
 Search Query → No Results → Helpful Message → Suggestions → Alternative Actions
 ```
@@ -314,11 +248,11 @@ Search Query → No Results → Helpful Message → Suggestions → Alternative 
 1. User searches for very specific or non-existent tools
 2. System shows "No tools found" message
 3. Provides suggestions for broader search terms
-4. Offers to try AI assistant for better results
+4. Offers alternative search suggestions
 
 ## 🎯 Conversion Flows
 
-### 11. Anonymous to Registered User
+### 8. Anonymous to Registered User
 ```
 Anonymous Usage → Feature Limitation → Sign Up Prompt → Registration → Full Access
 ```
@@ -330,7 +264,7 @@ Anonymous Usage → Feature Limitation → Sign Up Prompt → Registration → F
 4. Immediate access to bookmarking
 5. Retroactive application of attempted action
 
-### 12. Forgot Password Flow
+### 9. Forgot Password Flow
 ```
 Login Page → Forgot Password → Email Entry → Reset Instructions
 ```
@@ -342,7 +276,7 @@ Login Page → Forgot Password → Email Entry → Reset Instructions
 4. System shows confirmation message
 5. In production, user would receive reset email
 
-### 13. Engagement to Retention
+### 10. Engagement to Retention
 ```
 First Visit → Tool Discovery → Bookmark Creation → Return Visit → Habit Formation
 ```
@@ -358,12 +292,12 @@ First Visit → Tool Discovery → Bookmark Creation → Return Visit → Habit 
 
 ### Current Pain Points
 1. **Search Refinement** - Users may need multiple attempts to find specific tools
-2. **AI Context** - AI doesn't remember preferences across sessions
+
 3. **Mobile Search** - Could be more streamlined for mobile users
 
 ### Planned Improvements
 1. **Smart Search Suggestions** - Learn from user behavior
-2. **Persistent AI Context** - Remember user preferences
+
 3. **Voice Search** - Mobile voice input capability
 4. **Progressive Web App** - App-like mobile experience
 

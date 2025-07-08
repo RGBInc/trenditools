@@ -4,7 +4,7 @@ import { api } from "../../convex/_generated/api";
 import { Doc, Id } from "../../convex/_generated/dataModel";
 import { createSlug, slugToName } from "../lib/utils";
 import { ToolCard } from "./ToolCard";
-import { ChatInterface } from "./ChatInterface";
+
 import { SearchBar } from "./SearchBar";
 import { CategoryFilter } from "./CategoryFilter";
 
@@ -20,7 +20,7 @@ import { Button } from "./ui/button";
 export function SearchEngine() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
-  const [mode, setMode] = useState<'search' | 'ai' | 'saved'>('search');
+  const [mode, setMode] = useState<'search' | 'saved'>('search');
   const [debouncedQuery, setDebouncedQuery] = useState("");
 
   const [itemsPerPage] = useState(12);
@@ -59,7 +59,6 @@ export function SearchEngine() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedQuery(searchQuery);
-      setCurrentPage(1); // Reset to first page when search changes
     }, 300);
     return () => clearTimeout(timer);
   }, [searchQuery]);
@@ -119,7 +118,7 @@ export function SearchEngine() {
     setShowProfile(true);
   };
 
-  const showResults = debouncedQuery.trim() || selectedCategory;
+  const showResults = true; // Always show results - either search results or all tools
 
   const getGridCols = () => {
     switch (viewMode) {
@@ -194,9 +193,9 @@ export function SearchEngine() {
                 className="text-center py-8"
               >
                 <div className="max-w-2xl mx-auto space-y-4">
-                  <h2 className="text-2xl md:text-3xl font-bold">Find Digital Tools</h2>
+                  <h2 className="text-2xl md:text-3xl font-bold">Discover Digital Tools</h2>
                   <p className="text-base md:text-lg text-muted-foreground">
-                    Search thousands of curated digital tools or ask our AI assistant for specific recommendations.
+                    Browse and search thousands of curated digital tools to find exactly what you need.
                   </p>
                 </div>
               </motion.div>
@@ -219,9 +218,23 @@ export function SearchEngine() {
                   transition={{ duration: 0.3 }}
                   className="space-y-6"
                 >
-                  {/* View Toggle - Right Aligned, Hidden on Mobile */}
-                  <div className="hidden md:flex justify-end">
-                    <ViewToggle viewMode={viewMode} onViewModeChange={setViewMode} />
+                  {/* Results Header */}
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div>
+                      {!debouncedQuery.trim() && !selectedCategory ? (
+                        <h3 className="text-lg font-semibold text-muted-foreground">
+                          Browsing all tools
+                        </h3>
+                      ) : (
+                        <h3 className="text-lg font-semibold text-muted-foreground">
+                          {debouncedQuery.trim() ? `Search results for "${debouncedQuery}"` : `Tools in ${selectedCategory}`}
+                        </h3>
+                      )}
+                    </div>
+                    {/* View Toggle - Hidden on Mobile */}
+                    <div className="hidden md:flex">
+                      <ViewToggle viewMode={viewMode} onViewModeChange={setViewMode} />
+                    </div>
                   </div>
                   <div className={`grid ${getGridCols()} gap-4 md:gap-6`}>
                     <AnimatePresence>
@@ -274,16 +287,6 @@ export function SearchEngine() {
               )}
             </motion.div>
           </div>
-        ) : mode === 'ai' ? (
-          /* AI Chat Interface - Full Page */
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="h-[calc(100vh-8rem)]"
-          >
-            <ChatInterface onViewToolPage={handleViewToolPage} />
-          </motion.div>
         ) : (
           /* Saved Tools - Bookmarks Panel */
           <motion.div 
