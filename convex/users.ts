@@ -128,9 +128,45 @@ export const getBookmarkedTools = query({
 
     const toolIds = bookmarks.map((b) => b.toolId);
     const tools = await Promise.all(toolIds.map((id) => ctx.db.get(id)));
-    return tools.filter(Boolean);
-  },
-});
+    
+    // Helper function to transform screenshot URLs (same as in tools.ts)
+    function transformScreenshotUrl(screenshot: string | undefined, toolName?: string): string | undefined {
+      if (!screenshot) return undefined;
+      
+      // If it's already a full URL (like seed data), return as-is
+      if (screenshot.startsWith('http')) {
+        return screenshot;
+      }
+      
+      const baseUrl = process.env.CONVEX_SITE_URL || 'https://watchful-gazelle-766.convex.cloud';
+      
+      // If it's a relative URL path starting with /image?id=, convert to full URL
+      if (screenshot.startsWith('/image?id=')) {
+        return `${baseUrl}${screenshot}`;
+      }
+      
+      // If we have a tool name, create SEO-friendly URL
+      if (toolName && screenshot.startsWith('kg')) {
+        const slug = toolName
+          .toLowerCase()
+          .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+          .replace(/\s+/g, '-') // Replace spaces with hyphens
+          .replace(/-+/g, '-') // Replace multiple hyphens with single
+          .trim();
+        return `${baseUrl}/images/${slug}-${screenshot}.png`;
+      }
+      
+      // Fallback to legacy format for storage IDs
+      return `${baseUrl}/image?id=${screenshot}`;
+    }
+    
+    return tools.filter((tool): tool is NonNullable<typeof tool> => Boolean(tool)).map((tool) => ({
+       ...tool,
+       isBookmarked: true,
+       screenshot: transformScreenshotUrl(tool.screenshot, tool.name)
+     }));
+   },
+ });
 
 export const getBookmarks = query({
   args: {},

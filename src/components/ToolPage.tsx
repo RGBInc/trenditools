@@ -2,11 +2,12 @@ import React, { useState, useEffect } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Doc, Id } from "../../convex/_generated/dataModel";
-import { ArrowLeft, ExternalLink, Bookmark, BookmarkCheck, Calendar, Globe, ImageIcon } from "lucide-react";
+import { ArrowLeft, ExternalLink, Bookmark, BookmarkCheck, Calendar, Globe, ImageIcon, Wrench } from "lucide-react";
 import { Button } from "./ui/button";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import SEOToolStructuredData from "./SEOToolStructuredData";
+import { useNavigate } from "react-router-dom";
 
 interface ToolPageProps {
   toolId: Id<"tools">;
@@ -17,7 +18,24 @@ export function ToolPage({ toolId, onBack }: ToolPageProps) {
   const [isBookmarking, setIsBookmarking] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
+  const [isScrolled, setIsScrolled] = useState(false);
   const tool = useQuery(api.tools.getTool, { id: toolId });
+  const navigate = useNavigate();
+
+  const handleLogoClick = () => {
+    navigate('/');
+  };
+
+  // Scroll detection for sticky header
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      setIsScrolled(scrollTop > 100);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Preload image for faster loading
   useEffect(() => {
@@ -97,21 +115,95 @@ export function ToolPage({ toolId, onBack }: ToolPageProps) {
     <div className="min-h-screen bg-background">
       {/* SEO Structured Data */}
       <SEOToolStructuredData tool={tool} />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Back Button */}
+      
+      {/* Sticky Header */}
+      <motion.div 
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+          isScrolled 
+            ? 'bg-background/95 backdrop-blur-md border-b border-border shadow-sm' 
+            : 'bg-transparent pointer-events-none'
+        }`}
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ 
+          opacity: isScrolled ? 1 : 0,
+          y: isScrolled ? 0 : -20
+        }}
+        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+        style={{ visibility: isScrolled ? 'visible' : 'hidden' }}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+            >
+              <Button
+                variant="outline"
+                onClick={onBack}
+                className="flex items-center space-x-2 text-muted-foreground hover:text-foreground border-border"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>Back to tools</span>
+              </Button>
+            </motion.div>
+            
+            {/* TrendiTools Logo - Right Side */}
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="flex items-center space-x-1 cursor-pointer hover:opacity-80 transition-opacity"
+              onClick={handleLogoClick}
+            >
+              <div className="w-6 h-6 flex items-center justify-center">
+                <Wrench className="w-4 h-4 text-muted-foreground" />
+              </div>
+              <span className="text-lg font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                TrendiTools
+              </span>
+            </motion.div>
+          </div>
+        </div>
+      </motion.div>
+
+      <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 transition-all duration-300 ${
+        isScrolled ? 'pt-24 pb-8' : 'py-8'
+      }`}>
+        {/* Original Header with Back Button and Logo - Hidden when sticky header is active */}
         <motion.div 
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="mb-6"
+          className="flex items-center justify-between mb-6"
+          initial={{ opacity: 1 }}
+          animate={{ opacity: isScrolled ? 0 : 1 }}
+          transition={{ duration: 0.2 }}
+          style={{ visibility: isScrolled ? 'hidden' : 'visible' }}
         >
-          <Button
-            variant="outline"
-            onClick={onBack}
-            className="flex items-center space-x-2 text-muted-foreground hover:text-foreground border-border"
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
           >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Back to tools</span>
-          </Button>
+            <Button
+              variant="outline"
+              onClick={onBack}
+              className="flex items-center space-x-2 text-muted-foreground hover:text-foreground border-border"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Back to tools</span>
+            </Button>
+          </motion.div>
+          
+          {/* TrendiTools Logo - Right Side */}
+          <motion.div 
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="flex items-center space-x-1 cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={handleLogoClick}
+          >
+            <div className="w-6 h-6 flex items-center justify-center">
+              <Wrench className="w-4 h-4 text-muted-foreground" />
+            </div>
+            <span className="text-lg font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+              TrendiTools
+            </span>
+          </motion.div>
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

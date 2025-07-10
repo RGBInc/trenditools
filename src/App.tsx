@@ -12,12 +12,16 @@ import CookieConsent from "./components/CookieConsent";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import CookiePolicy from "./pages/CookiePolicy";
+import { useScrollToTop } from "./hooks/useScrollToTop";
 import { Wrench } from "lucide-react";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function App() {
   const [cookiePreferences, setCookiePreferences] = useState(null);
+  
+  // Enable scroll-to-top on route changes
+  useScrollToTop();
   
   const handleCookieConsent = (preferences: any) => {
     setCookiePreferences(preferences);

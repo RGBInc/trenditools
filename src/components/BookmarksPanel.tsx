@@ -33,7 +33,9 @@ export function BookmarksPanel({ onViewToolPage }: BookmarksPanelProps) {
             <h2 className="text-lg font-semibold">Your Bookmarks</h2>
           </div>
           {bookmarkedTools && bookmarkedTools.length > 0 && (
-            <ViewToggle viewMode={viewMode} onViewModeChange={setViewMode} />
+            <div className="hidden md:block">
+              <ViewToggle viewMode={viewMode} onViewModeChange={setViewMode} />
+            </div>
           )}
         </div>
 

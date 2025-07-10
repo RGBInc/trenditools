@@ -1,17 +1,32 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { Search, TrendingUp } from "lucide-react";
+import { Search, TrendingUp, X } from "lucide-react";
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
+  initialQuery?: string;
 }
 
-export function SearchBar({ onSearch }: SearchBarProps) {
-  const [query, setQuery] = useState("");
+export function SearchBar({ onSearch, initialQuery = "" }: SearchBarProps) {
+  const [query, setQuery] = useState(initialQuery);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
   
   const popularSearches = useQuery(api.tools.getPopularSearches);
+
+  // Update local query when initialQuery changes
+  useEffect(() => {
+    setQuery(initialQuery);
+  }, [initialQuery]);
+
+  // Real-time search as user types (debounced)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onSearch(query);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [query, onSearch]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,6 +40,11 @@ export function SearchBar({ onSearch }: SearchBarProps) {
     setShowSuggestions(false);
   };
 
+  const clearSearch = () => {
+    setQuery("");
+    onSearch("");
+  };
+
   return (
     <div className="relative">
       <form onSubmit={handleSubmit} className="relative">
@@ -36,11 +56,28 @@ export function SearchBar({ onSearch }: SearchBarProps) {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            onFocus={() => setShowSuggestions(true)}
-            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+            onFocus={() => {
+              setShowSuggestions(true);
+              setIsFocused(true);
+            }}
+            onBlur={() => {
+              setTimeout(() => setShowSuggestions(false), 200);
+              setIsFocused(false);
+            }}
             placeholder="Search for tools..."
-            className="w-full pl-12 pr-4 py-4 text-base border bg-background rounded-xl focus:ring-2 focus:ring-ring focus:outline-none transition-shadow"
+            className={`w-full pl-12 pr-12 py-4 text-base border bg-background rounded-xl focus:ring-2 focus:ring-ring focus:outline-none transition-all duration-300 ease-out ${
+              isFocused || query ? 'shadow-xl border-ring/50 bg-background/95' : 'shadow-sm hover:shadow-md'
+            } ${query ? 'ring-1 ring-ring/20' : ''}`}
           />
+          {query && (
+            <button
+              type="button"
+              onClick={clearSearch}
+              className="absolute inset-y-0 right-0 pr-4 flex items-center text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
         </div>
       </form>
 

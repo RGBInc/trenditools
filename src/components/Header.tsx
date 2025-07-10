@@ -32,10 +32,10 @@ export function Header({ mode = 'search', onModeChange, onShowProfile }: HeaderP
             whileHover={{ scale: 1.02 }}
             transition={{ type: "spring", stiffness: 400, damping: 17 }}
           >
-            <div className="w-8 h-8 flex items-center justify-center">
-              <Wrench className="w-5 h-5 text-muted-foreground" />
+            <div className="w-6 h-6 flex items-center justify-center">
+              <Wrench className="w-4 h-4 text-muted-foreground" />
             </div>
-            <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+            <h1 className="text-lg font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
               TrendiTools
             </h1>
           </motion.button>

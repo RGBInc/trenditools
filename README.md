@@ -4,18 +4,21 @@ A modern web application for discovering and exploring trending tools and servic
 
 ## ✨ Features
 
-- 🔍 **Smart Search**: Find tools by name, category, or functionality
-- 📱 **Responsive Design**: Works seamlessly on desktop and mobile
+- 🔍 **Google-like Search Experience**: Dynamic hero section with sticky search bar and smooth animations
+- 🎯 **Smart Search**: Find tools by name, category, or functionality with real-time suggestions
+- 📱 **Responsive Design**: Works seamlessly on desktop and mobile with fluid interactions
 - ⚡ **Fast Performance**: Built with Vite for lightning-fast development and builds
-- 🎨 **Modern UI**: Clean, intuitive interface with Tailwind CSS
+- 🎨 **Modern UI**: Clean, intuitive interface with Tailwind CSS and Framer Motion animations
 - 📊 **Real-time Data**: Powered by Convex for real-time updates
 - 🏷️ **Category Filtering**: Browse tools by specific categories
 - 🔖 **Bookmarking**: Save your favorite tools for later
+- ♿ **Accessibility**: WCAG compliant with keyboard navigation and screen reader support
 
 ## 🛠️ Tech Stack
 
 - **Frontend**: React 18, TypeScript, Vite
 - **Styling**: Tailwind CSS, Lucide Icons
+- **Animations**: Framer Motion for smooth, physics-based animations
 - **Backend**: Convex (real-time database and API)
 - **UI Components**: Custom components with shadcn/ui patterns
 - **State Management**: React hooks and Convex queries
@@ -121,13 +124,23 @@ trenditools/
 
 ## 📚 Documentation
 
+### Core Documentation
 - [🏗️ Architecture Guide](docs/ARCHITECTURE.md)
 - [🚀 Deployment Guide](docs/DEPLOYMENT_GUIDE.md)
 - [🔒 Security Audit](docs/SECURITY_AUDIT.md)
-- [🤖 Processing Script](docs/PROCESSING_SCRIPT.md)
-- [🖼️ Image System](docs/IMAGE_SYSTEM.md)
 - [👨‍💻 Developer Guide](docs/DEVELOPER_GUIDE.md)
 - [📊 Schema Documentation](docs/SCHEMA_DOCUMENTATION.md)
+
+### Feature Documentation
+- [🔍 Google-like Search Experience](docs/GOOGLE_LIKE_SEARCH_EXPERIENCE.md)
+- [🏗️ Search Architecture](docs/SEARCH_ARCHITECTURE.md)
+- [🎨 UI/UX Improvements](docs/UI_UX_IMPROVEMENTS.md)
+- [📝 Feature Log](docs/FEATURE_LOG.md)
+
+### Technical Documentation
+- [🤖 Processing Script](docs/PROCESSING_SCRIPT.md)
+- [🖼️ Image System](docs/IMAGE_SYSTEM.md)
+- [⚡ Image Performance Guide](docs/IMAGE_PERFORMANCE_GUIDE.md)
 
 ## 🌐 Deployment
 
