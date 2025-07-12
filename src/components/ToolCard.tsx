@@ -142,11 +142,6 @@ export function ToolCard({ tool, onViewDetails, onViewToolPage }: ToolCardProps)
           )}
         </div>
 
-        {/* Summary */}
-        <p className="text-sm text-muted-foreground line-clamp-2">
-          {tool.summary}
-        </p>
-
         {/* Tags */}
         {tool.tags && tool.tags.length > 0 && (
           <div className="flex flex-wrap gap-1">

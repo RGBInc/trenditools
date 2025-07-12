@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { ForgotPasswordModal } from "./components/ForgotPasswordModal";
 import { Button } from "./components/ui/button";
 import { Input } from "./components/ui/input";
-import { Eye, EyeOff, Mail, Lock, Wrench } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 
 export function SignInForm() {
   const { signIn } = useAuthActions();
@@ -44,26 +44,10 @@ export function SignInForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/20 p-4">
-      <div className="w-full max-w-md space-y-8">
-        {/* Header */}
-        <div className="text-center space-y-4">
-          <div className="mx-auto w-16 h-16 flex items-center justify-center">
-            <Wrench className="w-8 h-8 text-muted-foreground" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Welcome to TrendiTools</h1>
-            <p className="text-muted-foreground mt-2">
-              {flow === "signIn" 
-                ? "Sign in to discover amazing tools" 
-                : "Create your account to get started"}
-            </p>
-          </div>
-        </div>
-
-        {/* Main Form Card */}
-        <div className="border border-border rounded-xl shadow-xl bg-card/50 backdrop-blur-sm p-6">
-          <div className="space-y-1 pb-4">
+    <div className="flex items-center justify-center p-4">
+      {/* Main Form Card */}
+      <div className="w-full max-w-md lg:max-w-lg xl:max-w-xl border border-border rounded-xl shadow-lg bg-card p-6 space-y-6">
+          <div className="space-y-1">
             <h2 className="text-2xl font-semibold text-center">
               {flow === "signIn" ? "Sign In" : "Create Account"}
             </h2>
@@ -73,8 +57,6 @@ export function SignInForm() {
                 : "Fill in your details to create a new account"}
             </p>
           </div>
-          
-          <div className="space-y-6">
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Email Field */}
               <div className="space-y-2">
@@ -183,13 +165,11 @@ export function SignInForm() {
             >
               Continue as Guest
             </Button>
-          </div>
-        </div>
 
-        {/* Footer */}
-        <p className="text-center text-xs text-muted-foreground">
-          By continuing, you agree to our Terms of Service and Privacy Policy
-        </p>
+          {/* Footer */}
+          <p className="text-center text-xs text-muted-foreground">
+            By continuing, you agree to our Terms of Service and Privacy Policy
+          </p>
 
         {/* Forgot Password Modal */}
         <ForgotPasswordModal

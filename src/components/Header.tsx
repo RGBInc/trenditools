@@ -7,6 +7,7 @@ import { Doc } from "../../convex/_generated/dataModel";
 import { Search, Wrench, Bookmark as BookmarkIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { Chatter } from "./Chatter";
 
 interface HeaderProps {
   mode?: 'search' | 'saved';
@@ -19,26 +20,38 @@ export function Header({ mode = 'search', onModeChange, onShowProfile }: HeaderP
   const navigate = useNavigate();
 
   const handleLogoClick = () => {
-    navigate('/');
+    window.location.reload();
   };
 
   return (
     <header className="bg-background/80 backdrop-blur-md">
       <div className="w-full px-3 sm:px-4 lg:px-6 py-4">
         <div className="flex items-center justify-between">
-          <motion.button 
-            onClick={handleLogoClick}
-            className="flex items-center space-x-1 cursor-pointer"
-            whileHover={{ scale: 1.02 }}
-            transition={{ type: "spring", stiffness: 400, damping: 17 }}
-          >
-            <div className="w-6 h-6 flex items-center justify-center">
-              <Wrench className="w-4 h-4 text-muted-foreground" />
-            </div>
-            <h1 className="text-lg font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-              TrendiTools
-            </h1>
-          </motion.button>
+          <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
+            <motion.button 
+              onClick={handleLogoClick}
+              className="cursor-pointer flex-shrink-0"
+              whileHover={{ scale: 1.02 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+            >
+              <div className="w-6 h-6 flex items-center justify-center">
+                <motion.div
+                  animate={{
+                    rotate: [0, 15, -10, 12, -8, 10, -5, 0]
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    repeatDelay: 3,
+                    ease: "easeInOut"
+                  }}
+                >
+                  <Wrench className="w-6 h-6 text-foreground" />
+                </motion.div>
+              </div>
+            </motion.button>
+            <Chatter className="flex-1 min-w-0" />
+          </div>
 
           {/* Mode Toggle - Centered on desktop */}
           {user && onModeChange && (
@@ -98,7 +111,7 @@ export function Header({ mode = 'search', onModeChange, onShowProfile }: HeaderP
             </div>
           )}
 
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-1 sm:space-x-3">
             <ThemeToggle />
             {user ? (
               <UserButton onShowProfile={onShowProfile} />

@@ -13,7 +13,8 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import CookiePolicy from "./pages/CookiePolicy";
 import { useScrollToTop } from "./hooks/useScrollToTop";
-import { Wrench } from "lucide-react";
+import { ScrollToTopButton } from "./components/ScrollToTopButton";
+
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 
@@ -44,6 +45,7 @@ export default function App() {
           </Routes>
         </main>
         <CookieConsent onAccept={handleCookieConsent} />
+        <ScrollToTopButton />
         <Toaster position="top-center" theme="system" richColors />
       </div>
     </ThemeProvider>
@@ -54,31 +56,10 @@ function Content() {
   const loggedInUser = useQuery(api.auth.loggedInUser);
 
   // Loading state while checking user authentication
-  // Shows an animated wrench icon that simulates unscrewing motion
   if (loggedInUser === undefined) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="text-center space-y-4">
-          {/* Tool icon container with gradient background */}
-          <div className="w-16 h-16 mx-auto bg-gradient-to-br from-primary to-primary/60 rounded-full flex items-center justify-center">
-            {/* Animated wrench that rotates counter-clockwise with scaling effect */}
-            {/* Simulates the motion of unscrewing a bolt or component */}
-            <motion.div
-              animate={{
-                // Counter-clockwise rotation in 45-degree increments
-                rotate: [0, -45, -90, -135, -180, -225, -270, -315, -360],
-                // Subtle scaling effect to simulate pressure/release during unscrewing
-                scale: [1, 1.1, 1, 1.1, 1, 1.1, 1, 1.1, 1]
-              }}
-              transition={{
-                duration: 2, // Complete rotation cycle takes 2 seconds
-                repeat: Infinity, // Continuous animation
-                ease: "easeInOut" // Smooth acceleration/deceleration
-              }}
-            >
-              <Wrench className="w-8 h-8 text-muted-foreground" />
-            </motion.div>
-          </div>
+        <div className="text-center">
           <p className="text-muted-foreground">Loading TrendiTools...</p>
         </div>
       </div>
@@ -110,15 +91,12 @@ function Content() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.1 }}
-                className="text-center space-y-4"
+                className="text-center space-y-2"
               >
-                <div className="w-16 h-16 mx-auto flex items-center justify-center">
-                  <Wrench className="w-8 h-8 text-muted-foreground" />
-                </div>
-                <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
                   Welcome to TrendiTools
                 </h1>
-                <p className="text-base md:text-lg text-muted-foreground">
+                <p className="text-sm md:text-base text-muted-foreground">
                   Discover and search thousands of digital tools with intelligent assistance.
                 </p>
               </motion.div>

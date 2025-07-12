@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import SEOToolStructuredData from "./SEOToolStructuredData";
 import { useNavigate } from "react-router-dom";
 
+
 interface ToolPageProps {
   toolId: Id<"tools">;
   onBack: () => void;
@@ -23,7 +24,7 @@ export function ToolPage({ toolId, onBack }: ToolPageProps) {
   const navigate = useNavigate();
 
   const handleLogoClick = () => {
-    navigate('/');
+    window.location.reload();
   };
 
   // Scroll detection for sticky header
@@ -147,19 +148,34 @@ export function ToolPage({ toolId, onBack }: ToolPageProps) {
               </Button>
             </motion.div>
             
-            {/* TrendiTools Logo - Right Side */}
+            {/* Logo - Right Side */}
             <motion.div 
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="flex items-center space-x-1 cursor-pointer hover:opacity-80 transition-opacity"
-              onClick={handleLogoClick}
+              className="flex items-center justify-end"
             >
-              <div className="w-6 h-6 flex items-center justify-center">
-                <Wrench className="w-4 h-4 text-muted-foreground" />
-              </div>
-              <span className="text-lg font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                TrendiTools
-              </span>
+              <motion.button
+                onClick={handleLogoClick}
+                className="cursor-pointer hover:opacity-80 transition-opacity"
+                whileHover={{ scale: 1.02 }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              >
+                <div className="w-6 h-6 flex items-center justify-center">
+                  <motion.div
+                    animate={{
+                      rotate: [0, 15, -10, 12, -8, 10, -5, 0]
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      repeatDelay: 3,
+                      ease: "easeInOut"
+                    }}
+                  >
+                    <Wrench className="w-6 h-6 text-foreground" />
+                  </motion.div>
+                </div>
+              </motion.button>
             </motion.div>
           </div>
         </div>
@@ -190,19 +206,34 @@ export function ToolPage({ toolId, onBack }: ToolPageProps) {
             </Button>
           </motion.div>
           
-          {/* TrendiTools Logo - Right Side */}
+          {/* Logo - Right Side */}
           <motion.div 
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="flex items-center space-x-1 cursor-pointer hover:opacity-80 transition-opacity"
-            onClick={handleLogoClick}
+            className="flex items-center justify-end"
           >
-            <div className="w-6 h-6 flex items-center justify-center">
-              <Wrench className="w-4 h-4 text-muted-foreground" />
-            </div>
-            <span className="text-lg font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-              TrendiTools
-            </span>
+            <motion.button
+              onClick={handleLogoClick}
+              className="cursor-pointer hover:opacity-80 transition-opacity"
+              whileHover={{ scale: 1.02 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+            >
+              <div className="w-6 h-6 flex items-center justify-center">
+                <motion.div
+                  animate={{
+                    rotate: [0, 15, -10, 12, -8, 10, -5, 0]
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    repeatDelay: 3,
+                    ease: "easeInOut"
+                  }}
+                >
+                  <Wrench className="w-6 h-6 text-foreground" />
+                </motion.div>
+              </div>
+            </motion.button>
           </motion.div>
         </motion.div>
 

@@ -277,10 +277,10 @@ export function SearchEngine() {
                 >
                   <motion.h2 
                     animate={{
-                      fontSize: debouncedQuery.trim() || selectedCategory ? '1.5rem' : '1.875rem'
+                      fontSize: debouncedQuery.trim() || selectedCategory ? '1.25rem' : '1.5rem'
                     }}
                     transition={{ duration: 0.4 }}
-                    className="font-bold md:text-3xl"
+                    className="text-xl font-bold md:text-3xl"
                   >
                     Discover Digital Tools
                   </motion.h2>
@@ -290,9 +290,9 @@ export function SearchEngine() {
                         initial={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
                         transition={{ duration: 0.3 }}
-                        className="text-base md:text-lg text-muted-foreground"
+                        className="text-sm md:text-lg text-muted-foreground"
                       >
-                        Browse and search thousands of curated digital tools to find exactly what you need.
+                        Browse and search thousands of curated digital tools
                       </motion.p>
                     )}
                   </AnimatePresence>

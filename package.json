@@ -13,7 +13,6 @@
     "tags:dry": "node scripts/generate-tags.js --dry-run",
     "tags:live": "node scripts/generate-tags.js --live",
     "tags:missing": "node scripts/generate-tags.js --live --missing-only",
-
     "upload-tools": "node scripts/upload-tools.js",
     "demo": "node scripts/demo-enrichment.js",
     "process-tools": "node scripts/process-tools.js",
@@ -35,6 +34,7 @@
     "convex": "^1.24.2",
     "csv-parser": "^3.0.0",
     "framer-motion": "^12.18.1",
+    "gsap": "^3.13.0",
     "lucide-react": "^0.522.0",
     "node-fetch": "^3.3.2",
     "openai": "^5.5.1",
