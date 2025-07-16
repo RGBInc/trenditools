@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { usePaginatedQuery, useQuery } from "convex/react";
+import { useNavigate } from "react-router-dom";
 import { api } from "../../convex/_generated/api";
 import { Doc, Id } from "../../convex/_generated/dataModel";
 import { createSlug, slugToName } from "../lib/utils";
@@ -33,8 +34,9 @@ export function SearchEngine() {
   const containerRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
   const scrollToTop = useScrollToTopManual();
+  const navigate = useNavigate();
 
-  // URL-based routing
+  // URL-based routing with proper browser history handling
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const toolSlug = params.get('tool');
@@ -42,7 +44,26 @@ export function SearchEngine() {
       // Convert slug back to tool name for querying
       const toolName = slugToName(toolSlug);
       setCurrentToolName(toolName);
+    } else {
+      setCurrentToolName(null);
     }
+  }, []);
+
+  // Handle browser back/forward navigation
+  useEffect(() => {
+    const handlePopState = () => {
+      const params = new URLSearchParams(window.location.search);
+      const toolSlug = params.get('tool');
+      if (toolSlug) {
+        const toolName = slugToName(toolSlug);
+        setCurrentToolName(toolName);
+      } else {
+        setCurrentToolName(null);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
   const navigateToTool = (tool: Doc<"tools">) => {
@@ -55,11 +76,9 @@ export function SearchEngine() {
   };
 
   const navigateBack = () => {
-    setCurrentToolName(null);
-    const url = new URL(window.location.href);
-    url.searchParams.delete('tool');
-    window.history.pushState({}, '', url.toString());
-    scrollToTop();
+    // Use browser's native back functionality to ensure it works
+    // regardless of routing setup
+    window.history.back();
   };
 
   useEffect(() => {
