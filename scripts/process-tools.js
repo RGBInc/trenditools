@@ -37,10 +37,10 @@
  * └─────────────────────────────────────────────────────────────┘
  * 
  * Usage:
- *   npm run process-tools:enhanced        # Live mode with tracking
- *   npm run process-tools:enhanced:dry    # Dry run mode
- *   npm run process-tools:enhanced --resume  # Resume from last state
- *   npm run process-tools:enhanced --retry-failed  # Retry only failed items
+ *   npm run process-tools                 # Live mode with tracking
+ *   npm run process-tools:dry             # Dry run mode
+ *   npm run process-tools:resume          # Resume from last state
+ *   npm run process-tools:retry           # Retry only failed items
  * 
  * Requirements:
  *   - .env.local with FIRECRAWL_API_KEY and CONVEX_URL

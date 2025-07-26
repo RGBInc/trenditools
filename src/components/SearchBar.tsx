@@ -65,8 +65,8 @@ export function SearchBar({ onSearch, initialQuery = "" }: SearchBarProps) {
               setIsFocused(false);
             }}
             placeholder="Search for tools..."
-            className={`w-full pl-12 pr-12 py-4 text-base border bg-background rounded-xl focus:ring-2 focus:ring-ring focus:outline-none transition-all duration-300 ease-out ${
-              isFocused || query ? 'shadow-xl border-ring/50 bg-background/95' : 'shadow-sm hover:shadow-md'
+            className={`w-full pl-12 pr-12 py-4 text-base bg-background rounded-xl focus:ring-2 focus:ring-ring focus:outline-none transition-all duration-300 ease-out ${
+              isFocused || query ? 'shadow-xl bg-background/95' : 'shadow-sm hover:shadow-md'
             } ${query ? 'ring-1 ring-ring/20' : ''}`}
           />
           {query && (
@@ -82,7 +82,7 @@ export function SearchBar({ onSearch, initialQuery = "" }: SearchBarProps) {
       </form>
 
       {showSuggestions && popularSearches && popularSearches.length > 0 && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-popover rounded-lg shadow-lg border z-10">
+        <div className="absolute top-full left-0 right-0 mt-2 bg-popover rounded-lg shadow-lg z-10">
           <div className="p-3">
             <h4 className="text-xs font-semibold text-muted-foreground px-2 py-1 flex items-center">
               <TrendingUp className="w-3 h-3 mr-2" />

@@ -229,7 +229,7 @@ export function SearchEngine() {
               stiffness: 300,
               damping: 30
             }}
-            className="fixed top-16 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-b border-border/50 shadow-lg"
+            className="fixed top-16 left-0 right-0 z-40 bg-background/95 backdrop-blur-md shadow-lg"
           >
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
               <motion.div

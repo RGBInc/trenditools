@@ -4,7 +4,6 @@ import { api } from "../../convex/_generated/api";
 import { Doc, Id } from "../../convex/_generated/dataModel";
 import { ArrowLeft, ExternalLink, Bookmark, BookmarkCheck, Calendar, Globe, ImageIcon, Wrench } from "lucide-react";
 import { Button } from "./ui/button";
-import { motion } from "framer-motion";
 import { toast } from "sonner";
 import SEOToolStructuredData from "./SEOToolStructuredData";
 import { useNavigate } from "react-router-dom";
@@ -19,24 +18,12 @@ export function ToolPage({ toolId, onBack }: ToolPageProps) {
   const [isBookmarking, setIsBookmarking] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
-  const [isScrolled, setIsScrolled] = useState(false);
   const tool = useQuery(api.tools.getTool, { id: toolId });
   const navigate = useNavigate();
 
   const handleLogoClick = () => {
     window.location.reload();
   };
-
-  // Scroll detection for sticky header
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollTop = window.scrollY;
-      setIsScrolled(scrollTop > 100);
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   // Preload image for faster loading
   useEffect(() => {
@@ -117,135 +104,37 @@ export function ToolPage({ toolId, onBack }: ToolPageProps) {
       {/* SEO Structured Data */}
       <SEOToolStructuredData tool={tool} />
       
-      {/* Sticky Header */}
-      <motion.div 
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isScrolled 
-            ? 'bg-background/95 backdrop-blur-md border-b border-border shadow-sm' 
-            : 'bg-transparent pointer-events-none'
-        }`}
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ 
-          opacity: isScrolled ? 1 : 0,
-          y: isScrolled ? 0 : -20
-        }}
-        transition={{ type: "spring", stiffness: 400, damping: 30 }}
-        style={{ visibility: isScrolled ? 'visible' : 'hidden' }}
-      >
+      {/* Fixed Header - Always visible */}
+      <div className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <motion.div 
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-            >
-              <Button
-                variant="outline"
-                onClick={onBack}
-                className="flex items-center space-x-2 text-muted-foreground hover:text-foreground border-border"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                <span>Back to tools</span>
-              </Button>
-            </motion.div>
-            
-            {/* Logo - Right Side */}
-            <motion.div 
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="flex items-center justify-end"
-            >
-              <motion.button
-                onClick={handleLogoClick}
-                className="cursor-pointer hover:opacity-80 transition-opacity"
-                whileHover={{ scale: 1.02 }}
-                transition={{ type: "spring", stiffness: 400, damping: 17 }}
-              >
-                <div className="w-6 h-6 flex items-center justify-center">
-                  <motion.div
-                    animate={{
-                      rotate: [0, 15, -10, 12, -8, 10, -5, 0]
-                    }}
-                    transition={{
-                      duration: 2,
-                      repeat: Infinity,
-                      repeatDelay: 3,
-                      ease: "easeInOut"
-                    }}
-                  >
-                    <Wrench className="w-6 h-6 text-foreground" />
-                  </motion.div>
-                </div>
-              </motion.button>
-            </motion.div>
-          </div>
-        </div>
-      </motion.div>
-
-      <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 transition-all duration-300 ${
-        isScrolled ? 'pt-24 pb-8' : 'py-8'
-      }`}>
-        {/* Original Header with Back Button and Logo - Hidden when sticky header is active */}
-        <motion.div 
-          className="flex items-center justify-between mb-6"
-          initial={{ opacity: 1 }}
-          animate={{ opacity: isScrolled ? 0 : 1 }}
-          transition={{ duration: 0.2 }}
-          style={{ visibility: isScrolled ? 'hidden' : 'visible' }}
-        >
-          <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-          >
             <Button
               variant="outline"
               onClick={onBack}
-              className="flex items-center space-x-2 text-muted-foreground hover:text-foreground border-border"
+              className="flex items-center space-x-2 text-muted-foreground hover:text-foreground"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Back to tools</span>
             </Button>
-          </motion.div>
-          
-          {/* Logo - Right Side */}
-          <motion.div 
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="flex items-center justify-end"
-          >
-            <motion.button
+            
+            {/* Logo */}
+            <button
               onClick={handleLogoClick}
               className="cursor-pointer hover:opacity-80 transition-opacity"
-              whileHover={{ scale: 1.02 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
             >
-              <div className="w-6 h-6 flex items-center justify-center">
-                <motion.div
-                  animate={{
-                    rotate: [0, 15, -10, 12, -8, 10, -5, 0]
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    repeatDelay: 3,
-                    ease: "easeInOut"
-                  }}
-                >
-                  <Wrench className="w-6 h-6 text-foreground" />
-                </motion.div>
-              </div>
-            </motion.button>
-          </motion.div>
-        </motion.div>
+              <Wrench className="w-6 h-6 text-foreground" />
+            </button>
+          </div>
+        </div>
+      </div>
 
+      {/* Main Content with top padding to account for fixed header */}
+       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
             {/* Header */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="space-y-4"
-            >
+            <div className="space-y-4">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <h1 className="text-3xl md:text-4xl font-bold mb-2">{tool.name}</h1>
@@ -278,7 +167,7 @@ export function ToolPage({ toolId, onBack }: ToolPageProps) {
                 {user && (
                   <Button
                     variant="outline"
-                    onClick={handleBookmark}
+                    onClick={() => void handleBookmark()}
                     disabled={isBookmarking}
                     className="flex items-center space-x-2"
                   >
@@ -291,15 +180,10 @@ export function ToolPage({ toolId, onBack }: ToolPageProps) {
                   </Button>
                 )}
               </div>
-            </motion.div>
+            </div>
 
             {/* Screenshot */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="rounded-xl overflow-hidden bg-muted aspect-video relative"
-            >
+            <div className="rounded-xl overflow-hidden bg-muted aspect-video relative">
               {tool.screenshot ? (
                 <>
                   {imageLoading && (
@@ -332,32 +216,22 @@ export function ToolPage({ toolId, onBack }: ToolPageProps) {
                   <p className="text-sm">No preview available</p>
                 </div>
               )}
-            </motion.div>
+            </div>
 
             {/* Description */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="space-y-4"
-            >
+            <div className="space-y-4">
               <h2 className="text-2xl font-semibold">About {tool.name}</h2>
               <div className="prose prose-neutral dark:prose-invert max-w-none">
                 <p className="text-muted-foreground leading-relaxed">
-                  {tool.summary || tool.description || 'No description available.'}
+                  {tool.summary || 'No description available.'}
                 </p>
               </div>
-            </motion.div>
+            </div>
           </div>
 
           {/* Sidebar */}
           <div className="space-y-6">
-            <motion.div 
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 }}
-              className="bg-card border rounded-xl p-6 space-y-4"
-            >
+            <div className="bg-card rounded-xl p-6 space-y-4">
               <h3 className="font-semibold">Tool Information</h3>
               <div className="space-y-3">
                 <div>
@@ -392,14 +266,8 @@ export function ToolPage({ toolId, onBack }: ToolPageProps) {
                     </a>
                   </div>
                 )}
-                {tool.pricing && (
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Pricing</label>
-                    <p className="text-sm">{tool.pricing}</p>
-                  </div>
-                )}
               </div>
-            </motion.div>
+            </div>
           </div>
         </div>
       </div>
