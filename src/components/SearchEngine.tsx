@@ -99,7 +99,16 @@ export function SearchEngine() {
       }
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
+    // Reset sticky state when switching to search mode
+    if (mode === 'search') {
+      // Immediately check scroll position when switching to search mode
+      handleScroll();
+      window.addEventListener('scroll', handleScroll, { passive: true });
+    } else {
+      // Reset sticky state when not in search mode
+      setIsSearchSticky(false);
+    }
+
     return () => window.removeEventListener('scroll', handleScroll);
   }, [mode, debouncedQuery, selectedCategory]);
 
@@ -109,6 +118,10 @@ export function SearchEngine() {
   // Note: We don't want to scroll when loading more results
   useEffect(() => {
     scrollToTop();
+    // Reset sticky state when scrolling to top due to mode change
+    if (mode === 'search') {
+      setIsSearchSticky(false);
+    }
   }, [mode, showProfile]);
 
   // Always use paginated search - no more "show all" mode
@@ -294,27 +307,7 @@ export function SearchEngine() {
                   transition={{ duration: 0.4, ease: "easeInOut" }}
                   className="max-w-2xl mx-auto space-y-4"
                 >
-                  <motion.h2 
-                    animate={{
-                      fontSize: debouncedQuery.trim() || selectedCategory ? '1.25rem' : '1.5rem'
-                    }}
-                    transition={{ duration: 0.4 }}
-                    className="text-xl font-bold md:text-3xl"
-                  >
-                    Discover Digital Tools
-                  </motion.h2>
-                  <AnimatePresence>
-                    {!debouncedQuery.trim() && !selectedCategory && (
-                      <motion.p 
-                        initial={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.3 }}
-                        className="text-sm md:text-lg text-muted-foreground"
-                      >
-                        Browse and search thousands of curated digital tools
-                      </motion.p>
-                    )}
-                  </AnimatePresence>
+                  {/* Removed: Discover Digital Tools heading and subtitle */}
                 </motion.div>
               </motion.div>
 
@@ -418,8 +411,8 @@ export function SearchEngine() {
                     </motion.div>
                   )}
 
-                  {/* Load More for search/category */}
-                  {searchStatus !== "Exhausted" && searchResults && searchResults.length > 0 && (
+                  {/* Load More for search/category - only show when there are results and not exhausted */}
+                  {searchStatus !== "Exhausted" && searchResults && searchResults.length > 0 && searchStatus !== "LoadingFirstPage" && (
                     <div className="flex justify-center">
                       <Button
                         onClick={() => loadMore(8)}

@@ -9,6 +9,7 @@ import {
   DialogTitle 
 } from "./ui/dialog";
 import { Button } from "./ui/button";
+import { Input } from "./ui/input";
 import { Mail, X, CheckCircle } from "lucide-react";
 
 interface ForgotPasswordModalProps {
@@ -58,35 +59,26 @@ export function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordModalProp
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-md">
         <DialogHeader className="space-y-4">
-          <div className="flex items-center justify-between">
-            <DialogTitle className="flex items-center space-x-2">
-              <Mail className="w-5 h-5" />
-              <span>Reset Password</span>
-            </DialogTitle>
-            <button
-              onClick={handleClose}
-              className="p-2 rounded-lg hover:bg-accent transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
+          <DialogTitle className="flex items-center space-x-2">
+            <Mail className="w-5 h-5" />
+            <span>Reset Password</span>
+          </DialogTitle>
         </DialogHeader>
 
         {!isSubmitted ? (
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Enter your email address and we'll send you instructions to reset your password.
+              Enter your email address and I'll send you instructions to reset your password.
             </p>
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Email Address</label>
-              <input
+              <Input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder="Enter your email address"
-                onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+                onKeyDown={(e) => e.key === "Enter" && void handleSubmit()}
               />
             </div>
 
@@ -99,7 +91,7 @@ export function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordModalProp
                 Cancel
               </Button>
               <Button
-                onClick={handleSubmit}
+                onClick={() => void handleSubmit()}
                 disabled={isSubmitting || !email}
                 className="flex-1"
               >

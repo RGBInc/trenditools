@@ -78,6 +78,7 @@ const CONFIG = {
   csvPath: path.join(__dirname, '../data/Trendi Tools - Final.csv'),
   progressPath: path.join(__dirname, '../data/processing-progress.json'),
   resultsPath: path.join(__dirname, '../data/processing-results.json'),
+  failedUrlsCsvPath: path.join(__dirname, '../data/failed_urls_report.csv'),
   firecrawlApiKey: process.env.FIRECRAWL_API_KEY,
   convexUrl: process.env.VITE_CONVEX_URL,
   screenshotDir: path.join(__dirname, '../data/screenshots'),
@@ -161,6 +162,64 @@ async function saveProgressState() {
 }
 
 /**
+ * Write failed URL to CSV file
+ */
+async function writeFailedUrlToCsv(url, errorMessage, attempts) {
+  if (CONFIG.dryRun) {
+    console.log(`🔍 DRY RUN: Would write failed URL to CSV: ${url}`);
+    return;
+  }
+
+  try {
+    // Check if file exists, if not create with header
+    let fileExists = true;
+    try {
+      await fs.access(CONFIG.failedUrlsCsvPath);
+    } catch {
+      fileExists = false;
+    }
+
+    // Escape quotes in error message for CSV format
+    const escapedError = errorMessage.replace(/"/g, '""');
+    const csvLine = `"${url}","${escapedError}",${attempts}\n`;
+
+    if (!fileExists) {
+      // Create file with header
+      const header = 'URL,Error Message,Attempts\n';
+      await fs.writeFile(CONFIG.failedUrlsCsvPath, header + csvLine);
+      console.log(`📝 Created failed URLs CSV: ${CONFIG.failedUrlsCsvPath}`);
+    } else {
+      // Check if URL already exists in file
+      const existingContent = await fs.readFile(CONFIG.failedUrlsCsvPath, 'utf8');
+      const lines = existingContent.split('\n');
+      let urlExists = false;
+      let updatedContent = '';
+
+      for (const line of lines) {
+        if (line.startsWith(`"${url}"`)) {
+          // Update existing entry
+          updatedContent += csvLine;
+          urlExists = true;
+        } else if (line.trim()) {
+          updatedContent += line + '\n';
+        }
+      }
+
+      if (!urlExists) {
+        // Append new entry
+        updatedContent += csvLine;
+      }
+
+      await fs.writeFile(CONFIG.failedUrlsCsvPath, updatedContent);
+    }
+
+    console.log(`📝 Updated failed URLs CSV: ${url} (${attempts} attempts)`);
+  } catch (error) {
+    console.error('Failed to write to failed URLs CSV:', error);
+  }
+}
+
+/**
  * Update URL status and stage information
  */
 function updateUrlStatus(url, status, stage = null, data = null, error = null) {
@@ -204,6 +263,10 @@ function updateUrlStatus(url, status, stage = null, data = null, error = null) {
     progressState.completedCount++;
   } else if (status === STAGES.FAILED) {
     progressState.failedCount++;
+    // Automatically write failed URL to CSV
+    if (error && urlState.attempts >= CONFIG.maxRetries) {
+      writeFailedUrlToCsv(url, error, urlState.attempts).catch(console.error);
+    }
   }
 }
 

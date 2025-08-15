@@ -44,7 +44,10 @@ export default function App() {
             <Route path="/cookies" element={<CookiePolicy />} />
           </Routes>
         </main>
-        <CookieConsent onAccept={handleCookieConsent} />
+        {/* Only show cookie consent on authenticated pages */}
+        <Authenticated>
+          <CookieConsent onAccept={handleCookieConsent} />
+        </Authenticated>
         <ScrollToTopButton />
         <Toaster position="top-center" theme="system" richColors />
       </div>
@@ -107,26 +110,11 @@ function Content() {
             transition={{ duration: 0.5 }}
             className="flex-1 flex items-center justify-center px-4 py-12"
           >
-            <div className="max-w-md w-full space-y-8">
+            <div className="max-w-md w-full">
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-                className="text-center space-y-2"
-              >
-                <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                  Welcome to TrendiTools
-                </h1>
-                <p className="text-sm md:text-base text-muted-foreground">
-                  Discover and search thousands of digital tools with intelligent assistance.
-                </p>
-              </motion.div>
-              
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                className="bg-card border rounded-xl p-6 md:p-8 shadow-lg"
+                transition={{ duration: 0.5 }}
               >
                 <SignInForm />
               </motion.div>

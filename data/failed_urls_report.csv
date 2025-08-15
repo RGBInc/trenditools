@@ -7,3 +7,9 @@ https://pinokio.computer,"Extraction job failed: All provided URLs are invalid",
 https://www.sonero.ai,"Extraction job failed: All provided URLs are invalid",5
 https://grok.x.ai,"Firecrawl API error: 403 Forbidden",5
 https://www.petals.dev/,"Navigation timeout of 30000 ms exceeded",1
+https://postgres.new/,"Extraction job failed: All provided URLs are invalid",30
+https://try.karmenai.com/,"Extraction job failed: All provided URLs are invalid",30
+https://x.com/itshikey,"Firecrawl API error: 403 Forbidden",1
+https://www.developers.google.com/ar,"Extraction job failed: All provided URLs are invalid",30
+https://www.devgpt.com/,"Status check failed: 502 Bad Gateway",30
+https://www.diagram.com,"Extraction job failed: All provided URLs are invalid",7

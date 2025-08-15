@@ -65,9 +65,9 @@ export function SearchBar({ onSearch, initialQuery = "" }: SearchBarProps) {
               setIsFocused(false);
             }}
             placeholder="Search for tools..."
-            className={`w-full pl-12 pr-12 py-4 text-base bg-background rounded-xl focus:ring-2 focus:ring-ring focus:outline-none transition-all duration-300 ease-out ${
-              isFocused || query ? 'shadow-xl bg-background/95' : 'shadow-sm hover:shadow-md'
-            } ${query ? 'ring-1 ring-ring/20' : ''}`}
+            className={`w-full pl-12 pr-12 py-4 text-base bg-background rounded-xl border border-border/40 focus:ring-2 focus:ring-ring focus:border-ring focus:outline-none transition-all duration-300 ease-out dark:shadow-[inset_0_1px_2px_rgba(255,255,255,0.05)] ${
+              isFocused || query ? 'shadow-lg bg-background/95 border-border/60 dark:shadow-[inset_0_2px_4px_rgba(255,255,255,0.08)]' : 'hover:shadow-md hover:border-border/50 dark:hover:shadow-[inset_0_1px_3px_rgba(255,255,255,0.06)]'
+            } ${query ? 'ring-1 ring-ring/30' : ''}`}
           />
           {query && (
             <button

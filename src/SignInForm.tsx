@@ -1,6 +1,7 @@
 "use client";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { ForgotPasswordModal } from "./components/ForgotPasswordModal";
 import { Button } from "./components/ui/button";
@@ -44,19 +45,13 @@ export function SignInForm() {
   };
 
   return (
-    <div className="flex items-center justify-center p-4">
-      {/* Main Form Card */}
-      <div className="w-full max-w-md lg:max-w-lg xl:max-w-xl border border-border rounded-xl shadow-lg bg-card p-6 space-y-6">
-          <div className="space-y-1">
-            <h2 className="text-2xl font-semibold text-center">
-              {flow === "signIn" ? "Sign In" : "Create Account"}
-            </h2>
-            <p className="text-center text-muted-foreground">
-              {flow === "signIn" 
-                ? "Enter your credentials to access your account"
-                : "Fill in your details to create a new account"}
-            </p>
-          </div>
+    <div className="w-full max-w-sm mx-auto">
+      <div className="space-y-6">
+        <div className="text-center">
+          <h2 className="text-2xl font-semibold">
+            {flow === "signIn" ? "Sign In" : "Sign Up"}
+          </h2>
+        </div>
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Email Field */}
               <div className="space-y-2">
@@ -153,7 +148,7 @@ export function SignInForm() {
                 <div className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+                <span className="bg-card px-2 text-muted-foreground">Or</span>
               </div>
             </div>
 
@@ -168,7 +163,20 @@ export function SignInForm() {
 
           {/* Footer */}
           <p className="text-center text-xs text-muted-foreground">
-            By continuing, you agree to our Terms of Service and Privacy Policy
+            By continuing, you agree to our{" "}
+            <Link 
+              to="/terms" 
+              className="text-primary hover:text-primary/80 hover:underline transition-colors"
+            >
+              Terms of Service
+            </Link>
+            {" "}and{" "}
+            <Link 
+              to="/privacy" 
+              className="text-primary hover:text-primary/80 hover:underline transition-colors"
+            >
+              Privacy Policy
+            </Link>
           </p>
 
         {/* Forgot Password Modal */}

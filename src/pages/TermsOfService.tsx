@@ -33,7 +33,7 @@ const TermsOfService: React.FC = () => {
                 <h2 className="text-xl font-semibold text-foreground mb-3">2. Description of Service</h2>
                 <p className="text-muted-foreground">
                   TrendiTools is a digital platform that helps users discover, explore, and bookmark 
-                  digital tools and services. We provide search functionality, AI-powered recommendations, 
+                  digital tools and services. I provide search functionality, AI-powered recommendations, 
                   and curated tool collections.
                 </p>
               </section>
@@ -47,7 +47,7 @@ const TermsOfService: React.FC = () => {
                   <li>Maintaining the confidentiality of your account credentials</li>
                   <li>All activities that occur under your account</li>
                   <li>Providing accurate and current information</li>
-                  <li>Notifying us of any unauthorized use of your account</li>
+                  <li>Notifying me of any unauthorized use of your account</li>
                 </ul>
               </section>
               

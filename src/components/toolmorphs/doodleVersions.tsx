@@ -22,7 +22,7 @@ export const doodleVersions: DoodleVersion[] = [
   {
     version: 'v0',
     name: 'Plain Text Foundation',
-    description: 'The original simple text version - "Discover Digital Tools"',
+    description: 'The original simple text version',
     releaseDate: '2024-01-15',
     component: V0PlainText,
     isActive: false,
