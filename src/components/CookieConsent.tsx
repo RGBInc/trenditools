@@ -83,7 +83,7 @@ const CookieConsent: React.FC<CookieConsentProps> = ({ onAccept }) => {
           </div>
           
           <p className="text-muted-foreground text-sm mb-4">
-            I use cookies to enhance your experience, provide personalized content, and analyze my traffic. 
+            We use cookies to enhance your experience, provide personalized content, and analyze our traffic. 
             You can customize your preferences below.
           </p>
           
@@ -118,7 +118,7 @@ const CookieConsent: React.FC<CookieConsentProps> = ({ onAccept }) => {
               <div className="flex items-center justify-between">
                 <div>
                   <h4 className="font-medium text-foreground">Analytics Cookies</h4>
-                  <p className="text-xs text-muted-foreground">Help me improve my service</p>
+                  <p className="text-xs text-muted-foreground">Help us improve our service</p>
                 </div>
                 <input
                   type="checkbox"
@@ -177,7 +177,7 @@ const CookieConsent: React.FC<CookieConsentProps> = ({ onAccept }) => {
           </div>
           
           <p className="text-xs text-muted-foreground mt-3 text-center">
-            Learn more in my{' '}
+            Learn more in our{' '}
             <a href="/cookies" className="text-primary hover:text-primary/80 underline">
               Cookie Policy
             </a>

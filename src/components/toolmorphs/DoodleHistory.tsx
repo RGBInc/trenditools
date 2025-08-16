@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, Eye, Tag, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+// Removed Card and Badge imports - using simple divs instead
 import { getAllDoodlesSorted, type DoodleVersion } from './doodleVersions';
 import { DoodleManager } from './DoodleManager';
 
@@ -84,7 +83,6 @@ export function DoodleHistory({ onSelectVersion, currentVersion }: DoodleHistory
                 <DoodleManager 
                   currentVersion={previewVersion}
                   debouncedQuery=""
-                  selectedCategory={null}
                 />
               </div>
             </div>
@@ -101,33 +99,33 @@ export function DoodleHistory({ onSelectVersion, currentVersion }: DoodleHistory
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
           >
-            <Card className={`h-full transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer ${
+            <div className={`h-full transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer border rounded-lg bg-card text-card-foreground shadow-sm ${
               doodle.isActive ? 'ring-2 ring-primary' : ''
             } ${
               currentVersion === doodle.version ? 'bg-primary/5' : ''
             }`}>
-              <CardHeader className="pb-3">
+              <div className="flex flex-col space-y-1.5 p-6 pb-3">
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
-                    <CardTitle className="text-lg flex items-center gap-2">
+                    <div className="text-lg font-semibold leading-none tracking-tight flex items-center gap-2">
                       {doodle.name}
                       {doodle.isActive && (
-                        <Badge variant="default" className="text-xs">
+                        <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-primary text-primary-foreground hover:bg-primary/80">
                           Active
-                        </Badge>
+                        </span>
                       )}
-                    </CardTitle>
-                    <CardDescription className="text-sm">
+                    </div>
+                    <div className="text-sm text-muted-foreground">
                       {doodle.description}
-                    </CardDescription>
+                    </div>
                   </div>
-                  <Badge variant="outline" className="text-xs font-mono">
+                  <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 font-mono">
                     {doodle.version}
-                  </Badge>
+                  </span>
                 </div>
-              </CardHeader>
+              </div>
               
-              <CardContent className="space-y-4">
+              <div className="p-6 pt-0 space-y-4">
                 {/* Release Date */}
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Calendar className="w-4 h-4" />
@@ -137,10 +135,10 @@ export function DoodleHistory({ onSelectVersion, currentVersion }: DoodleHistory
                 {/* Tags */}
                 <div className="flex flex-wrap gap-1">
                   {doodle.tags.map((tag) => (
-                    <Badge key={tag} variant="secondary" className="text-xs">
+                    <span key={tag} className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80">
                       <Tag className="w-3 h-3 mr-1" />
                       {tag}
-                    </Badge>
+                    </span>
                   ))}
                 </div>
                 
@@ -168,8 +166,8 @@ export function DoodleHistory({ onSelectVersion, currentVersion }: DoodleHistory
                     </Button>
                   )}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </motion.div>
         ))}
       </div>

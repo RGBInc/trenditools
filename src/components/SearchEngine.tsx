@@ -21,7 +21,7 @@ import { Button } from "./ui/button";
 
 export function SearchEngine() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
+
   const [mode, setMode] = useState<'search' | 'saved'>('search');
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [isSearchSticky, setIsSearchSticky] = useState(false);
@@ -40,12 +40,19 @@ export function SearchEngine() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const toolSlug = params.get('tool');
+    const queryParam = params.get('q');
+    
     if (toolSlug) {
       // Convert slug back to tool name for querying
       const toolName = slugToName(toolSlug);
       setCurrentToolName(toolName);
     } else {
       setCurrentToolName(null);
+    }
+    
+    // Set search query from URL parameter for SEO
+    if (queryParam && queryParam !== searchQuery) {
+      setSearchQuery(queryParam);
     }
   }, []);
 
@@ -54,17 +61,24 @@ export function SearchEngine() {
     const handlePopState = () => {
       const params = new URLSearchParams(window.location.search);
       const toolSlug = params.get('tool');
+      const queryParam = params.get('q');
+      
       if (toolSlug) {
         const toolName = slugToName(toolSlug);
         setCurrentToolName(toolName);
       } else {
         setCurrentToolName(null);
       }
+      
+      // Update search query from URL parameter
+      if (queryParam !== searchQuery) {
+        setSearchQuery(queryParam || '');
+      }
     };
 
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
+  }, [searchQuery]);
 
   const navigateToTool = (tool: Doc<"tools">) => {
     const toolSlug = createSlug(tool.name);
@@ -110,7 +124,7 @@ export function SearchEngine() {
     }
 
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [mode, debouncedQuery, selectedCategory]);
+  }, [mode, debouncedQuery]);
 
 
 
@@ -133,23 +147,14 @@ export function SearchEngine() {
     api.tools.searchTools,
     {
       query: debouncedQuery,
-      category: selectedCategory || undefined,
     },
     { initialNumItems: itemsPerPage }
   );
 
   const currentPageResults = searchResults;
 
-  const categories = useQuery(api.tools.getCategories);
-
-
-
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
-  }, []);
-
-  const handleCategoryChange = useCallback((category: string) => {
-    setSelectedCategory(category);
   }, []);
 
 
@@ -258,9 +263,8 @@ export function SearchEngine() {
                   transition={{ duration: 0.3, delay: 0.2 }}
                 >
                   <CategoryFilter
-                    categories={categories || []}
-                    selectedCategory={selectedCategory}
-                    onCategoryChange={handleCategoryChange}
+                    onSearch={handleSearch}
+                    currentSearchQuery={searchQuery}
                   />
                 </motion.div>
               </motion.div>
@@ -292,17 +296,17 @@ export function SearchEngine() {
                 animate={{ 
                   opacity: 1, 
                   y: 0,
-                  height: debouncedQuery.trim() || selectedCategory ? 'auto' : 'auto'
+                  height: debouncedQuery.trim() ? 'auto' : 'auto'
                 }}
                 transition={{ duration: 0.5 }}
                 className={`text-center transition-all duration-500 ease-in-out ${
-                  debouncedQuery.trim() || selectedCategory ? 'py-4' : 'py-8'
+                  debouncedQuery.trim() ? 'py-4' : 'py-8'
                 }`}
               >
                 <motion.div 
                   animate={{
-                    scale: debouncedQuery.trim() || selectedCategory ? 0.9 : 1,
-                    opacity: debouncedQuery.trim() || selectedCategory ? 0.8 : 1
+                    scale: debouncedQuery.trim() ? 0.9 : 1,
+                    opacity: debouncedQuery.trim() ? 0.8 : 1
                   }}
                   transition={{ duration: 0.4, ease: "easeInOut" }}
                   className="max-w-2xl mx-auto space-y-4"
@@ -314,15 +318,15 @@ export function SearchEngine() {
               {/* Search Interface - Becomes more prominent when active */}
               <motion.div 
                 animate={{
-                  marginTop: debouncedQuery.trim() || selectedCategory ? '0rem' : '0rem',
-                  marginBottom: debouncedQuery.trim() || selectedCategory ? '1.5rem' : '2rem'
+                  marginTop: debouncedQuery.trim() ? '0rem' : '0rem',
+                  marginBottom: debouncedQuery.trim() ? '1.5rem' : '2rem'
                 }}
                 transition={{ duration: 0.4 }}
                 className="max-w-4xl mx-auto space-y-6"
               >
                 <motion.div
                   animate={{
-                    scale: debouncedQuery.trim() || selectedCategory ? 1.02 : 1
+                    scale: debouncedQuery.trim() ? 1.02 : 1
                   }}
                   transition={{ duration: 0.3 }}
                 >
@@ -330,14 +334,13 @@ export function SearchEngine() {
                 </motion.div>
                 <motion.div
                   animate={{
-                    opacity: debouncedQuery.trim() || selectedCategory ? 1 : 0.8
+                    opacity: debouncedQuery.trim() ? 1 : 0.8
                   }}
                   transition={{ duration: 0.3 }}
                 >
                   <CategoryFilter
-                    categories={categories || []}
-                    selectedCategory={selectedCategory}
-                    onCategoryChange={handleCategoryChange}
+                    onSearch={handleSearch}
+                    currentSearchQuery={searchQuery}
                   />
                 </motion.div>
               </motion.div>
@@ -350,26 +353,26 @@ export function SearchEngine() {
                     animate={{ 
                       opacity: 1, 
                       y: 0,
-                      marginTop: debouncedQuery.trim() || selectedCategory ? '0rem' : '1rem'
+                      marginTop: debouncedQuery.trim() ? '0rem' : '1rem'
                     }}
                     exit={{ opacity: 0, y: -20 }}
                     transition={{ 
                       duration: 0.4, 
                       ease: "easeOut",
-                      delay: debouncedQuery.trim() || selectedCategory ? 0.1 : 0
+                      delay: debouncedQuery.trim() ? 0.1 : 0
                     }}
                     className="space-y-6"
                   >
                   {/* Results Header */}
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div>
-                      {!debouncedQuery.trim() && !selectedCategory ? (
+                      {!debouncedQuery.trim() ? (
                         <h3 className="text-lg font-semibold text-muted-foreground">
                           Browsing all tools
                         </h3>
                       ) : (
                         <h3 className="text-lg font-semibold text-muted-foreground">
-                          {debouncedQuery.trim() ? `Search results for "${debouncedQuery}"` : `Tools in ${selectedCategory}`}
+                          Search results for "{debouncedQuery}"
                         </h3>
                       )}
                     </div>

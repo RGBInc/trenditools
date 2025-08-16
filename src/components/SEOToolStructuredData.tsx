@@ -22,7 +22,7 @@ export const SEOToolStructuredData: React.FC<SEOToolStructuredDataProps> = ({ to
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
     "name": tool.name,
-    "description": tool.tagline || tool.summary || `${tool.name} - AI Tool`,
+    "description": tool.tagline || tool.summary || `${tool.name} - Digital Tool`,
     "url": tool.url,
     "applicationCategory": tool.category,
     "operatingSystem": "Web",
@@ -42,7 +42,7 @@ export const SEOToolStructuredData: React.FC<SEOToolStructuredDataProps> = ({ to
       "@type": "ImageObject",
       "url": tool.screenshot,
       "name": `${tool.name} Screenshot`,
-      "description": `Screenshot of ${tool.name} - ${tool.tagline || 'AI Tool'}`,
+      "description": `Screenshot of ${tool.name} - ${tool.tagline || 'Digital Tool'}`,
       "contentUrl": tool.screenshot,
       "thumbnailUrl": tool.screenshot,
       "encodingFormat": "image/png",
@@ -60,8 +60,8 @@ export const SEOToolStructuredData: React.FC<SEOToolStructuredDataProps> = ({ to
   // Remove undefined properties
   const cleanStructuredData = JSON.parse(JSON.stringify(structuredData));
 
-  const pageTitle = `${tool.name} - ${tool.tagline || 'AI Tool'} | TrendiTools`;
-  const pageDescription = tool.summary || tool.tagline || `Discover ${tool.name}, an innovative AI tool in the ${tool.category} category. View screenshots, features, and more on TrendiTools.`;
+  const pageTitle = `${tool.name} - ${tool.tagline || 'Digital Tool'} | TrendiTools`;
+  const pageDescription = tool.summary || tool.tagline || `Discover ${tool.name}, an innovative digital tool in the ${tool.category} category. View screenshots, features, and more on TrendiTools.`;
 
   return (
     <>
@@ -69,7 +69,7 @@ export const SEOToolStructuredData: React.FC<SEOToolStructuredDataProps> = ({ to
       <title>{pageTitle}</title>
       <meta name="title" content={pageTitle} />
       <meta name="description" content={pageDescription} />
-      <meta name="keywords" content={`${tool.name}, ${tool.tags.join(', ')}, AI tools, ${tool.category}`} />
+      <meta name="keywords" content={`${tool.name}, ${tool.tags.join(', ')}, digital tools, ${tool.category}`} />
       
       {/* Open Graph / Facebook */}
       <meta property="og:type" content="website" />

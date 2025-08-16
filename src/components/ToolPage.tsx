@@ -22,7 +22,7 @@ export function ToolPage({ toolId, onBack }: ToolPageProps) {
   const navigate = useNavigate();
 
   const handleLogoClick = () => {
-    window.location.reload();
+    void navigate('/');
   };
 
   // Preload image for faster loading
@@ -102,7 +102,7 @@ export function ToolPage({ toolId, onBack }: ToolPageProps) {
   return (
     <div className="min-h-screen bg-background">
       {/* SEO Structured Data */}
-      <SEOToolStructuredData tool={tool} />
+      <SEOToolStructuredData tool={tool as any} />
       
       {/* Fixed Header - Always visible */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md">
@@ -140,13 +140,15 @@ export function ToolPage({ toolId, onBack }: ToolPageProps) {
                   <h1 className="text-3xl md:text-4xl font-bold mb-2">{tool.name}</h1>
                   <p className="text-lg text-muted-foreground mb-4">{tool.tagline}</p>
                   <div className="flex items-center space-x-4">
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary/10 text-primary">
-                      {tool.category}
-                    </span>
-                    {tool.createdAt && (
+                    {tool.category && (
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary/10 text-primary">
+                        {tool.category}
+                      </span>
+                    )}
+                    {tool._creationTime && (
                       <div className="flex items-center space-x-1 text-sm text-muted-foreground">
                         <Calendar className="w-4 h-4" />
-                        <span>Added {new Date(tool.createdAt).toLocaleDateString()}</span>
+                        <span>Added {new Date(tool._creationTime).toLocaleDateString()}</span>
                       </div>
                     )}
                   </div>
@@ -234,10 +236,12 @@ export function ToolPage({ toolId, onBack }: ToolPageProps) {
             <div className="bg-card rounded-xl p-6 space-y-4">
               <h3 className="font-semibold">Tool Information</h3>
               <div className="space-y-3">
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Category</label>
-                  <p className="text-sm">{tool.category}</p>
-                </div>
+                {tool.category && (
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Category</label>
+                    <p className="text-sm">{tool.category}</p>
+                  </div>
+                )}
                 {tool.tags && tool.tags.length > 0 && (
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">Tags</label>

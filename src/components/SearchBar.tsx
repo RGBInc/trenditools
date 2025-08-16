@@ -24,6 +24,14 @@ export function SearchBar({ onSearch, initialQuery = "" }: SearchBarProps) {
   useEffect(() => {
     const timer = setTimeout(() => {
       onSearch(query);
+      // Update URL for SEO
+      const url = new URL(window.location.href);
+      if (query.trim()) {
+        url.searchParams.set('q', query);
+      } else {
+        url.searchParams.delete('q');
+      }
+      window.history.replaceState({}, '', url.toString());
     }, 300);
     return () => clearTimeout(timer);
   }, [query, onSearch]);
@@ -38,11 +46,23 @@ export function SearchBar({ onSearch, initialQuery = "" }: SearchBarProps) {
     setQuery(suggestion);
     onSearch(suggestion);
     setShowSuggestions(false);
+    // Update URL for SEO
+    const url = new URL(window.location.href);
+    if (suggestion.trim()) {
+      url.searchParams.set('q', suggestion);
+    } else {
+      url.searchParams.delete('q');
+    }
+    window.history.replaceState({}, '', url.toString());
   };
 
   const clearSearch = () => {
     setQuery("");
     onSearch("");
+    // Update URL for SEO
+    const url = new URL(window.location.href);
+    url.searchParams.delete('q');
+    window.history.replaceState({}, '', url.toString());
   };
 
   return (

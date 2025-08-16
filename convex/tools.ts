@@ -293,6 +293,105 @@ export const getPopularSearches = query({
   },
 });
 
+export const getSmartSearchSuggestions = query({
+  args: {},
+  handler: async (ctx) => {
+    // Get popular search terms
+    const searches = await ctx.db.query("searches").collect();
+    const queryCount = searches.reduce((acc, search) => {
+      acc[search.query] = (acc[search.query] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    
+    const popularSearches = Object.entries(queryCount)
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 6)
+      .map(([query]) => query)
+      .filter(query => query.length > 2); // Filter out very short queries
+    
+    // Get all tools to analyze common tags and create smart suggestions
+    const allTools = await ctx.db.query("tools").collect();
+    
+    // Extract and count popular tags
+    const tagCount = allTools.reduce((acc, tool) => {
+      if (tool.tags) {
+        tool.tags.forEach(tag => {
+          acc[tag] = (acc[tag] || 0) + 1;
+        });
+      }
+      return acc;
+    }, {} as Record<string, number>);
+    
+    const popularTags = Object.entries(tagCount)
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 6)
+      .map(([tag]) => tag)
+      .filter(tag => tag.length > 2);
+    
+    // Create smart suggestions combining popular searches and tags
+    const smartSuggestions = [
+      ...popularSearches.slice(0, 3),
+      ...popularTags.slice(0, 3)
+    ].filter((item, index, self) => self.indexOf(item) === index); // Remove duplicates
+    
+    return smartSuggestions.slice(0, 6); // Return max 6 suggestions for initial load
+  },
+});
+
+export const getExpandedSearchSuggestions = query({
+  args: {},
+  handler: async (ctx) => {
+    // Get popular search terms
+    const searches = await ctx.db.query("searches").collect();
+    const queryCount = searches.reduce((acc, search) => {
+      acc[search.query] = (acc[search.query] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    
+    const popularSearches = Object.entries(queryCount)
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 15)
+      .map(([query]) => query)
+      .filter(query => query.length > 2);
+    
+    // Get all tools to analyze common tags and create smart suggestions
+    const allTools = await ctx.db.query("tools").collect();
+    
+    // Extract and count popular tags
+    const tagCount = allTools.reduce((acc, tool) => {
+      if (tool.tags) {
+        tool.tags.forEach(tag => {
+          acc[tag] = (acc[tag] || 0) + 1;
+        });
+      }
+      return acc;
+    }, {} as Record<string, number>);
+    
+    const popularTags = Object.entries(tagCount)
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 15)
+      .map(([tag]) => tag)
+      .filter(tag => tag.length > 2);
+    
+    // Add some curated suggestions for better discovery
+    const curatedSuggestions = [
+      "AI tools", "productivity", "design", "development", "marketing", 
+      "analytics", "automation", "collaboration", "writing", "video editing",
+      "image generation", "code editor", "project management", "social media",
+      "data visualization", "SEO tools", "email marketing", "chatbots"
+    ];
+    
+    // Create expanded suggestions combining all sources
+    const expandedSuggestions = [
+      ...popularSearches.slice(0, 8),
+      ...popularTags.slice(0, 8),
+      ...curatedSuggestions.slice(0, 8)
+    ].filter((item, index, self) => self.indexOf(item) === index); // Remove duplicates
+    
+    return expandedSuggestions.slice(0, 20); // Return max 20 suggestions for expanded view
+  },
+});
+
 export const getByName = query({
   args: { name: v.string() },
   handler: async (ctx, args) => {

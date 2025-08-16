@@ -5,13 +5,11 @@ import { doodleVersions, type DoodleVersion } from './doodleVersions';
 interface DoodleManagerProps {
   currentVersion?: string;
   debouncedQuery: string;
-  selectedCategory: string | null;
 }
 
 export function DoodleManager({ 
   currentVersion = 'v1', 
-  debouncedQuery, 
-  selectedCategory 
+  debouncedQuery
 }: DoodleManagerProps) {
   const [currentDoodle, setCurrentDoodle] = useState<DoodleVersion | null>(null);
 
@@ -30,24 +28,24 @@ export function DoodleManager({
       animate={{ 
         opacity: 1, 
         y: 0,
-        height: debouncedQuery.trim() || selectedCategory ? 'auto' : 'auto'
+        height: debouncedQuery.trim() ? 'auto' : 'auto'
       }}
       transition={{ duration: 0.5 }}
       className={`text-center transition-all duration-500 ease-in-out ${
-        debouncedQuery.trim() || selectedCategory ? 'py-4' : 'py-8'
+        debouncedQuery.trim() ? 'py-4' : 'py-8'
       }`}
     >
       <motion.div 
         animate={{
-          scale: debouncedQuery.trim() || selectedCategory ? 0.9 : 1,
-          opacity: debouncedQuery.trim() || selectedCategory ? 0.8 : 1
+          scale: debouncedQuery.trim() ? 0.9 : 1,
+          opacity: debouncedQuery.trim() ? 0.8 : 1
         }}
         transition={{ duration: 0.4, ease: "easeInOut" }}
         className="max-w-2xl mx-auto space-y-4"
       >
         <DoodleComponent 
           debouncedQuery={debouncedQuery}
-          selectedCategory={selectedCategory}
+          selectedCategory={null}
         />
       </motion.div>
     </motion.div>

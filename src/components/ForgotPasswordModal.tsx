@@ -68,7 +68,7 @@ export function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordModalProp
         {!isSubmitted ? (
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Enter your email address and I'll send you instructions to reset your password.
+              Enter your email address and we'll send you instructions to reset your password.
             </p>
 
             <div className="space-y-2">
