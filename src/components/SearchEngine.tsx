@@ -254,7 +254,7 @@ export function SearchEngine() {
                 }}
                 transition={{ duration: 0.5 }}
                 className={`text-center transition-all duration-500 ease-in-out ${
-                  debouncedQuery.trim() ? 'py-4' : 'py-8'
+                  debouncedQuery.trim() ? 'py-4' : 'py-4'
                 }`}
               >
                 <motion.div 
@@ -279,7 +279,7 @@ export function SearchEngine() {
                     animate={{ 
                       opacity: 1, 
                       y: 0,
-                      marginTop: debouncedQuery.trim() ? '0rem' : '1rem'
+                      marginTop: debouncedQuery.trim() ? '0rem' : '0rem'
                     }}
                     exit={{ opacity: 0, y: -20 }}
                     transition={{ 
