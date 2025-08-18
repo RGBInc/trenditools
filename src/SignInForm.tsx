@@ -17,7 +17,7 @@ export function SignInForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     
@@ -26,31 +26,45 @@ export function SignInForm() {
     formData.set("password", password);
     formData.set("flow", flow);
     
-    try {
-      await signIn("password", formData);
-    } catch (error: any) {
-      let toastTitle = "";
-      if (error.message.includes("Invalid password")) {
-        toastTitle = "Invalid password. Please try again.";
-      } else {
-        toastTitle =
-          flow === "signIn"
-            ? "Could not sign in, did you mean to sign up?"
-            : "Could not sign up, did you mean to sign in?";
-      }
-      toast.error(toastTitle);
-    } finally {
-      setSubmitting(false);
-    }
+    signIn("password", formData)
+      .then(() => {
+        // Success handled by auth state change
+      })
+      .catch((error: any) => {
+        let toastTitle = "";
+        if (error.message.includes("Invalid password")) {
+          toastTitle = "Invalid password. Please try again.";
+        } else {
+          toastTitle =
+            flow === "signIn"
+              ? "Could not sign in, did you mean to sign up?"
+              : "Could not sign up, did you mean to sign in?";
+        }
+        toast.error(toastTitle);
+      })
+      .finally(() => {
+        setSubmitting(false);
+      });
   };
 
   return (
-    <div className="w-full max-w-sm mx-auto">
-      <div className="space-y-6">
-        <div className="text-center">
-          <h2 className="text-2xl font-semibold">
-            {flow === "signIn" ? "Sign In" : "Sign Up"}
-          </h2>
+    <div className="w-full max-w-md mx-auto">
+      {/* Main Card Container */}
+      <div className="bg-card border border-border rounded-2xl shadow-lg p-8 space-y-6">
+        {/* Header with Logo/Brand */}
+        <div className="text-center space-y-2">
+          <div className="w-12 h-12 mx-auto bg-primary/10 rounded-xl flex items-center justify-center mb-4">
+            <span className="text-2xl font-bold text-primary">T</span>
+          </div>
+          <h1 className="text-2xl font-bold text-foreground">
+            {flow === "signIn" ? "Welcome back" : "Create account"}
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            {flow === "signIn" 
+              ? "Sign in to access your tools" 
+              : "Join TrendiTools to discover amazing tools"
+            }
+          </p>
         </div>
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Email Field */}

@@ -328,7 +328,7 @@ export function SearchEngine() {
 
                   {/* Load More for search/category - only show when there are results and not exhausted */}
                   {searchStatus !== "Exhausted" && searchResults && searchResults.length > 0 && searchStatus !== "LoadingFirstPage" && (
-                    <div className="flex justify-center">
+                    <div className="flex justify-center mt-16">
                       <Button
                         onClick={() => loadMore(8)}
                         disabled={searchStatus === "LoadingMore"}
