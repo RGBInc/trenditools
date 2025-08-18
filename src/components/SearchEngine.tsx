@@ -232,7 +232,7 @@ export function SearchEngine() {
       {/* Add top padding to account for fixed header and sticky search */}
       <div 
         className={`pb-8 ${
-          mode === 'search' ? 'pt-40' : 'pt-16'
+          mode === 'search' ? 'pt-40' : 'pt-0'
         }`}
       >
         {mode === 'search' ? (
@@ -254,7 +254,7 @@ export function SearchEngine() {
                 }}
                 transition={{ duration: 0.5 }}
                 className={`text-center transition-all duration-500 ease-in-out ${
-                  debouncedQuery.trim() ? 'py-4' : 'py-4'
+                  debouncedQuery.trim() ? 'py-4' : 'py-8'
                 }`}
               >
                 <motion.div 
@@ -287,25 +287,11 @@ export function SearchEngine() {
                       ease: "easeOut",
                       delay: debouncedQuery.trim() ? 0.1 : 0
                     }}
-                    className="space-y-6"
+                    className="space-y-2"
                   >
-                  {/* Results Header */}
-                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <div>
-                      {!debouncedQuery.trim() ? (
-                        <h3 className="text-lg font-semibold text-muted-foreground">
-                          Browsing all tools
-                        </h3>
-                      ) : (
-                        <h3 className="text-lg font-semibold text-muted-foreground">
-                          Search results for "{debouncedQuery}"
-                        </h3>
-                      )}
-                    </div>
-                    {/* View Toggle - Hidden on Mobile */}
-                    <div className="hidden md:flex">
-                      <ViewToggle viewMode={viewMode} onViewModeChange={setViewMode} />
-                    </div>
+                  {/* View Toggle - Hidden on Mobile */}
+                  <div className="hidden md:flex justify-end">
+                    <ViewToggle viewMode={viewMode} onViewModeChange={setViewMode} />
                   </div>
                   <div className={`grid ${getGridCols()} gap-4 md:gap-6`}>
                     <AnimatePresence>
@@ -365,7 +351,7 @@ export function SearchEngine() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
+            className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-0"
           >
             <BookmarksPanel onViewToolPage={handleViewToolPage} />
           </motion.div>
