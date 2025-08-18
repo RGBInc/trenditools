@@ -24,7 +24,7 @@ export function SearchEngine() {
 
   const [mode, setMode] = useState<'search' | 'saved'>('search');
   const [debouncedQuery, setDebouncedQuery] = useState("");
-  const [isSearchSticky, setIsSearchSticky] = useState(false);
+  const [isSearchSticky, setIsSearchSticky] = useState(true);
 
   const [itemsPerPage] = useState(12);
 
@@ -102,29 +102,14 @@ export function SearchEngine() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Scroll detection for sticky search bar
+  // Set sticky state based on mode
   useEffect(() => {
-    const handleScroll = () => {
-      if (heroRef.current && mode === 'search') {
-        const heroBottom = heroRef.current.offsetTop + heroRef.current.offsetHeight;
-        const scrollPosition = window.scrollY + 80; // Account for header height
-        
-        setIsSearchSticky(scrollPosition > heroBottom);
-      }
-    };
-
-    // Reset sticky state when switching to search mode
     if (mode === 'search') {
-      // Immediately check scroll position when switching to search mode
-      handleScroll();
-      window.addEventListener('scroll', handleScroll, { passive: true });
+      setIsSearchSticky(true);
     } else {
-      // Reset sticky state when not in search mode
       setIsSearchSticky(false);
     }
-
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [mode, debouncedQuery]);
+  }, [mode]);
 
 
 
@@ -132,10 +117,6 @@ export function SearchEngine() {
   // Note: We don't want to scroll when loading more results
   useEffect(() => {
     scrollToTop();
-    // Reset sticky state when scrolling to top due to mode change
-    if (mode === 'search') {
-      setIsSearchSticky(false);
-    }
   }, [mode, showProfile]);
 
   // Always use paginated search - no more "show all" mode
@@ -233,53 +214,26 @@ export function SearchEngine() {
             />
       </div>
       
-      {/* Sticky Search Bar - Appears when scrolling */}
-      <AnimatePresence>
-        {isSearchSticky && mode === 'search' && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ 
-              duration: 0.3, 
-              ease: "easeOut",
-              type: "spring",
-              stiffness: 300,
-              damping: 30
-            }}
-            className="fixed top-16 left-0 right-0 z-40 bg-background/95 backdrop-blur-md shadow-lg"
-          >
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-              <motion.div
-                initial={{ scale: 0.95 }}
-                animate={{ scale: 1 }}
-                transition={{ duration: 0.2, delay: 0.1 }}
-                className="space-y-4"
-              >
-                <SearchBar onSearch={handleSearch} initialQuery={searchQuery} />
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.3, delay: 0.2 }}
-                >
-                  <CategoryFilter
-                    onSearch={handleSearch}
-                    currentSearchQuery={searchQuery}
-                  />
-                </motion.div>
-              </motion.div>
+      {/* Sticky Search Bar - Always visible in search mode */}
+      {mode === 'search' && (
+        <div className="fixed top-16 left-0 right-0 z-40 bg-background/95 backdrop-blur-md shadow-lg">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div className="space-y-4">
+              <SearchBar onSearch={handleSearch} initialQuery={searchQuery} />
+              <CategoryFilter
+                onSearch={handleSearch}
+                currentSearchQuery={searchQuery}
+              />
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
+        </div>
+      )}
       
       {/* Add top padding to account for fixed header and sticky search */}
-      <motion.div 
-        animate={{
-          paddingTop: isSearchSticky && mode === 'search' ? '10rem' : '4rem'
-        }}
-        transition={{ duration: 0.3, ease: "easeInOut" }}
-        className="pb-8"
+      <div 
+        className={`pb-8 ${
+          mode === 'search' ? 'pt-40' : 'pt-16'
+        }`}
       >
         {mode === 'search' ? (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -315,35 +269,7 @@ export function SearchEngine() {
                 </motion.div>
               </motion.div>
 
-              {/* Search Interface - Becomes more prominent when active */}
-              <motion.div 
-                animate={{
-                  marginTop: debouncedQuery.trim() ? '0rem' : '0rem',
-                  marginBottom: debouncedQuery.trim() ? '1.5rem' : '2rem'
-                }}
-                transition={{ duration: 0.4 }}
-                className="max-w-4xl mx-auto space-y-6"
-              >
-                <motion.div
-                  animate={{
-                    scale: debouncedQuery.trim() ? 1.02 : 1
-                  }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <SearchBar onSearch={handleSearch} initialQuery={searchQuery} />
-                </motion.div>
-                <motion.div
-                  animate={{
-                    opacity: debouncedQuery.trim() ? 1 : 0.8
-                  }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <CategoryFilter
-                    onSearch={handleSearch}
-                    currentSearchQuery={searchQuery}
-                  />
-                </motion.div>
-              </motion.div>
+
 
               {/* Search Results - Expands smoothly when searching */}
               <AnimatePresence>
@@ -446,7 +372,7 @@ export function SearchEngine() {
         )}
 
 
-      </motion.div>
+      </div>
     </div>
   );
 }
