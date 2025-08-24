@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { usePaginatedQuery, useQuery } from "convex/react";
+import { usePaginatedQuery, useQuery, useMutation } from "convex/react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../convex/_generated/api";
 import { Doc, Id } from "../../convex/_generated/dataModel";
@@ -102,6 +102,8 @@ export function SearchEngine() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
+
+
   // Set sticky state based on mode
   useEffect(() => {
     if (mode === 'search') {
@@ -133,6 +135,20 @@ export function SearchEngine() {
   );
 
   const currentPageResults = searchResults;
+
+  const logSearch = useMutation(api.tools.logSearch);
+
+  // Log search when results are available
+  useEffect(() => {
+    if (debouncedQuery.trim() && searchResults && (searchStatus === "CanLoadMore" || searchStatus === "Exhausted")) {
+      logSearch({
+        query: debouncedQuery.trim(),
+        resultsCount: searchResults.length
+      }).catch(error => {
+        console.error('Failed to log search:', error);
+      });
+    }
+  }, [debouncedQuery, searchResults, searchStatus, logSearch]);
 
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
